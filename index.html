@@ -339,16 +339,16 @@ body {
 .table-header,
 .table-row {
   display: grid;
-  grid-template-columns: 100px 90px 100px 1fr 70px 90px 90px 70px 70px 80px;
-  gap: 8px;
+  grid-template-columns: 110px 110px 80px 1fr 90px 90px 90px 100px 50px 80px;
+  gap: 12px;
   padding: 12px 16px;
   font-size: 13px;
-  min-width: 900px;
+  min-width: 950px;
 }
 
 .table-header.unreg, .table-row.unreg {
-  grid-template-columns: 120px 100px 1fr 100px 100px 1fr 140px;
-  min-width: 800px;
+  grid-template-columns: 110px 110px 80px 1fr 100px 1fr 140px;
+  min-width: 850px;
 }
 
 .table-header {
@@ -370,7 +370,11 @@ body {
 .table-row:hover { background: var(--bg); }
 .table-row:last-child { border-bottom: none; }
 
-.cell { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.cell { 
+  white-space: normal; 
+  word-break: break-word; 
+  line-height: 1.4;
+}
 .cell-time { color: var(--text-dim); font-size: 12px; }
 .cell-code { font-weight: 700; color: var(--text); font-size: 11.5px; }
 .cell-name { font-weight: 600; color: var(--text); }
@@ -982,11 +986,12 @@ input[type="file"] { display: none; }
     <!-- Tabs -->
     <div class="tab-bar">
       <button class="tab-btn active" onclick="setTab('all', this)">รายการทั้งหมด</button>
-      <button class="tab-btn" onclick="setTab('off',  this)">OFF</button>
-      <button class="tab-btn" onclick="setTab('com',  this)">COM</button>
-      <button class="tab-btn" onclick="setTab('tol',  this)">TOL</button>
-      <button class="tab-btn" onclick="setTab('vpot', this)">VPOT</button>
-      <button class="tab-btn" onclick="setTab('veh',  this)">VEH</button>
+      <button class="tab-btn" onclick="setTab('off',  this)">อุปกรณ์สำนักงาน (OFF)</button>
+      <button class="tab-btn" onclick="setTab('com',  this)">คอมพิวเตอร์ (COM)</button>
+      <button class="tab-btn" onclick="setTab('tol',  this)">เครื่องมือช่าง (TOL)</button>
+      <button class="tab-btn" onclick="setTab('vpot', this)">อุปกรณ์ VPOT (VPOT)</button>
+      <button class="tab-btn" onclick="setTab('veh',  this)">ยานพาหนะ (VEH)</button>
+      <button class="tab-btn" onclick="setTab('pending', this)" style="color:var(--warning)">ยังไม่ได้นับ</button>
       <button class="tab-btn" onclick="setTab('unreg', this)" style="color:var(--danger)">NEW ITEMS (นอกระบบ)</button>
     </div>
 
@@ -1358,20 +1363,33 @@ async function startScanner() {
 
     // ปรับขนาดกรอบ (qrbox) ให้เป็นสี่เหลี่ยมจัตุรัสขนาดใหญ่ (85% ของจอ)
     const config = { 
-      fps: 20, 
+      fps: 30, // เพิ่มเป็น 30 FPS เพื่อให้กล้องจับภาพและสแกนได้เร็วขึ้น
       qrbox: function(viewfinderWidth, viewfinderHeight) {
         let minEdgeSize = Math.min(viewfinderWidth, viewfinderHeight);
         let boxSize = Math.floor(minEdgeSize * 0.85); 
-        return { width: boxSize, height: boxSize }; // สี่เหลี่ยมจัตุรัสเพื่อให้ผู้ใช้ถอยมือถือออกห่างได้ (ช่วยเรื่องโฟกัส)
+        return { width: boxSize, height: boxSize }; 
       }, 
       formatsToSupport: formats, 
-      aspectRatio: 1.0, // ปรับให้ภาพแสดงผลเป็นสี่เหลี่ยมจัตุรัสมากขึ้น
+      aspectRatio: 1.0, 
       disableFlip: false 
     };
 
-    // ใช้ค่าพื้นฐาน { facingMode: "environment" } เท่านั้น เพื่อป้องกัน Safari บน iPhone บล็อกการเปิดกล้อง
-    // (บน iPhone ระบบจะทำ Auto Focus ให้เองโดยอัตโนมัติอยู่แล้วเมื่อระยะห่างเหมาะสม)
-    await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
+    // ตั้งค่าความละเอียดสูง (HD) เพื่อให้อ่านบาร์โค้ด 2 มิติ (Data Matrix, QR Code) ได้คมชัด
+    // และใส่ advanced constraint สำหรับ Auto Focus บน Android (iOS จะข้ามอันที่ตัวเองไม่รองรับ)
+    const videoConstraints = {
+      facingMode: "environment",
+      width: { ideal: 1280, max: 1920 },
+      height: { ideal: 720, max: 1080 },
+      advanced: [{ focusMode: "continuous" }]
+    };
+
+    try {
+      await html5QrCode.start(videoConstraints, config, onScanSuccess, () => {});
+    } catch (constraintErr) {
+      // Fallback เผื่อ Safari บน iOS บางเวอร์ชั่นเตะ Constraints ทิ้ง
+      console.warn("Advanced constraints failed, falling back to simple environment mode", constraintErr);
+      await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
+    }
     
     isScanning = true;
     document.getElementById("btn-start").classList.add("hidden");
@@ -1553,7 +1571,18 @@ function renderTable(assets) {
 
   // Filter by tab
   let filtered = assets;
-  if (currentTab !== "all") {
+  if (currentTab === "pending") {
+    const now = new Date();
+    const curMonth = now.getMonth();
+    const curYear = now.getFullYear();
+    filtered = assets.filter(row => {
+      if (!row[7]) return true; // No scan date = pending
+      const d = new Date(row[7]);
+      if (isNaN(d.getTime())) return true;
+      // Pending if the last scan was not in the current month/year
+      return d.getMonth() !== curMonth || d.getFullYear() !== curYear;
+    });
+  } else if (currentTab !== "all") {
     const tabMap = { off: "OFF", com: "COM", tol: "TOL", vpot: "VPOT", veh: "VEH" };
     const t = tabMap[currentTab] || "";
     filtered = assets.filter(row => String(row[2]).toUpperCase().trim().includes(t));
@@ -1593,7 +1622,15 @@ function renderTable(assets) {
     const acqDate   = formatDate(row[5]);
     const status    = row[6] || "Active";
     const lastScan  = formatDateTime(row[7]);
-    const lastResult = escHtml(row[8] || "-");
+    
+    let rawResult = String(row[8] || "-");
+    let displayResult = rawResult;
+    if (rawResult.includes("Confirmed from Unregistered") || rawResult.includes("Unregistered")) {
+      displayResult = "สินค้านอกระบบ";
+    } else if (rawResult === "Count" || rawResult === "Checked") {
+      displayResult = "ตรวจสอบแล้ว";
+    }
+    const lastResult = escHtml(displayResult);
 
     return `
       <div class="table-row">
@@ -1869,7 +1906,12 @@ function viewAssetDetail(assetNo) {
     if (extractedRemark && !remarkText) {
       remarkText = extractedRemark;
     }
-    lastResultText = "Confirmed from Unregistered";
+  }
+
+  if (lastResultText.includes("Confirmed from Unregistered") || lastResultText.includes("Unregistered")) {
+    lastResultText = "สินค้านอกระบบ";
+  } else if (lastResultText === "Count" || lastResultText === "Checked") {
+    lastResultText = "ตรวจสอบแล้ว";
   }
 
   document.getElementById("modal-acq-date").textContent      = row ? formatDate(row[5])     : "-";
