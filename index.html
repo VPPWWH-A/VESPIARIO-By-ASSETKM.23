@@ -1948,7 +1948,7 @@ function renderTable(assets) {
     const status    = row[6] || "Active";
     const lastScan  = formatDateTime(row[7]);
     
-    let rawResult = String(row[8] || "-");
+    let rawResult = String(row[8] || "-").trim();
     let displayResult = rawResult;
     if (rawResult.includes("Confirmed from Unregistered") || rawResult.includes("Unregistered")) {
       displayResult = "สินค้านอกระบบ";
@@ -2319,6 +2319,8 @@ function viewAssetDetail(assetNo) {
     }
   }
 
+  let lastResultText = String(row ? (row[8] || "-") : "-").trim();
+
   if (lastResultText.includes("Confirmed from Unregistered") || lastResultText.includes("Unregistered")) {
     lastResultText = "สินค้านอกระบบ";
   } else if (lastResultText === "Count" || lastResultText === "Checked") {
@@ -2428,7 +2430,7 @@ function exportExcel() {
       });
       exportData.push(newRow);
     } else {
-      let rawResult = String(row[8] || "");
+      let rawResult = String(row[8] || "").trim();
       let displayResult = rawResult;
       if (rawResult.includes("Confirmed from Unregistered") || rawResult.includes("Unregistered")) displayResult = "สินค้านอกระบบ";
       else if (rawResult === "Count" || rawResult === "Checked") displayResult = "ตรวจสอบแล้ว";
