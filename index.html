@@ -820,7 +820,7 @@ input[type="file"] { display: none; }
     <div class="btn-group">
       <button id="btn-start" class="btn btn-primary btn-full" onclick="startScanner()">📷 เปิดกล้องสแกน</button>
       <button id="btn-stop" class="btn btn-danger btn-full hidden" onclick="stopScanner()">⏹️ ปิดกล้อง</button>
-      <button class="btn btn-primary btn-full" onclick="openManualAddModal()" style="margin-top:4px;">➕ สินค้าบาร์โค้ดเสียหาย</button>
+      <button class="btn btn-primary btn-full" onclick="openManualAddModal()" style="margin-top:4px;">➕ สินค้าบาร์โค้ดเสียหาย / สแกนไม่ได้</button>
     </div>
     <div id="result"></div>
   </div>
@@ -846,11 +846,11 @@ input[type="file"] { display: none; }
           <label>หมวดหมู่ <span class="req">*</span></label>
           <select id="input-category">
             <option value="">เลือก</option>
-            <option value="OFF">OFF</option>
-            <option value="COM">COM</option>
-            <option value="TOL">TOL</option>
-            <option value="VPOT">VPOT</option>
-            <option value="VEH">VEH</option>
+            <option value="OFF">อุปกรณ์สำนักงาน (OFF)</option>
+            <option value="COM">คอมพิวเตอร์ (COM)</option>
+            <option value="TOL">เครื่องมือช่าง (TOL)</option>
+            <option value="VPOT">อุปกรณ์ VPOT (VPOT)</option>
+            <option value="VEH">ยานพาหนะ (VEH)</option>
           </select>
         </div>
         <div class="form-field">
@@ -1123,11 +1123,11 @@ input[type="file"] { display: none; }
         <label>หมวดหมู่ทรัพย์สิน <span class="req">*</span></label>
         <select id="manual-category">
           <option value="">เลือก</option>
-          <option value="OFF">OFF</option>
-          <option value="COM">COM</option>
-          <option value="TOL">TOL</option>
-          <option value="VPOT">VPOT</option>
-          <option value="VEH">VEH</option>
+          <option value="OFF">อุปกรณ์สำนักงาน (OFF)</option>
+          <option value="COM">คอมพิวเตอร์ (COM)</option>
+          <option value="TOL">เครื่องมือช่าง (TOL)</option>
+          <option value="VPOT">อุปกรณ์ VPOT (VPOT)</option>
+          <option value="VEH">ยานพาหนะ (VEH)</option>
         </select>
       </div>
       <div class="form-row">
@@ -1339,13 +1339,14 @@ async function onScanSuccess(decodedText) {
   }, 1200);
 }
 
+
+
 async function startScanner() {
   if (isScanning) return;
   const reader = document.getElementById("reader");
   reader.innerHTML = `<div style="padding:30px;text-align:center;"><div class="spinner"></div><div style="margin-top:10px;font-size:13px;color:var(--text-muted);">กำลังขออนุญาตเปิดกล้อง...</div></div>`;
 
   try {
-    // ขั้นตอนที่ 1: ขออนุญาตกล้องก่อน (ทำให้ browser แสดง permission popup)
     let cameras = [];
     try {
       cameras = await Html5Qrcode.getCameras();
@@ -1359,7 +1360,6 @@ async function startScanner() {
 
     reader.innerHTML = `<div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>`;
 
-    // ขั้นตอนที่ 2: สร้าง Scanner Instance
     html5QrCode = new Html5Qrcode("reader", { 
       experimentalFeatures: { useBarCodeDetectorIfSupported: true },
       verbose: false
@@ -1377,7 +1377,6 @@ async function startScanner() {
       Html5QrcodeSupportedFormats.DATA_MATRIX,
     ];
 
-    // Config: ไม่ใส่ aspectRatio (สาเหตุหลักที่ Safari เด้ง OverconstrainedError)
     const config = { 
       fps: 15,
       qrbox: function(viewfinderWidth, viewfinderHeight) {
@@ -1389,48 +1388,27 @@ async function startScanner() {
       disableFlip: false 
     };
 
-    // ขั้นตอนที่ 3: ลองเปิดกล้อง (3 ระดับ fallback)
     let started = false;
 
-    // ลำดับ 1: ใช้ facingMode environment อย่างง่าย (ใช้ได้ทั้ง Safari, Chrome, Android)
     if (!started) {
       try {
-        await html5QrCode.start(
-          { facingMode: "environment" },
-          config,
-          onScanSuccess,
-          () => {}
-        );
+        await html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess, () => {});
         started = true;
-        console.log("Camera started with facingMode: environment");
-      } catch(e1) {
-        console.warn("Fallback 1 failed (facingMode environment):", e1);
-      }
+      } catch(e1) {}
     }
 
-    // ลำดับ 2: ใช้ facingMode user (กล้องหน้า — เผื่อเครื่องไม่มีกล้องหลัง เช่น PC)
     if (!started) {
       try {
-        // ต้องสร้าง instance ใหม่เพราะตัวเก่าอาจค้าง
         try { await html5QrCode.clear(); } catch(ce){}
         html5QrCode = new Html5Qrcode("reader", { 
           experimentalFeatures: { useBarCodeDetectorIfSupported: true },
           verbose: false
         });
-        await html5QrCode.start(
-          { facingMode: "user" },
-          config,
-          onScanSuccess,
-          () => {}
-        );
+        await html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {});
         started = true;
-        console.log("Camera started with facingMode: user");
-      } catch(e2) {
-        console.warn("Fallback 2 failed (facingMode user):", e2);
-      }
+      } catch(e2) {}
     }
 
-    // ลำดับ 3: ใช้ deviceId ตรงๆ ของกล้องตัวแรกที่เจอ
     if (!started && cameras.length > 0) {
       try {
         try { await html5QrCode.clear(); } catch(ce){}
@@ -1438,20 +1416,11 @@ async function startScanner() {
           experimentalFeatures: { useBarCodeDetectorIfSupported: true },
           verbose: false
         });
-        // เลือกกล้องหลัง (ชื่อมักมี "back" หรือ "environment") ก่อน
         let backCam = cameras.find(c => /back|rear|environment/i.test(c.label));
-        let selectedCam = backCam || cameras[cameras.length - 1]; // กล้องตัวสุดท้ายมักเป็นกล้องหลัง
-        await html5QrCode.start(
-          { deviceId: { exact: selectedCam.id } },
-          config,
-          onScanSuccess,
-          () => {}
-        );
+        let selectedCam = backCam || cameras[cameras.length - 1];
+        await html5QrCode.start({ deviceId: { exact: selectedCam.id } }, config, onScanSuccess, () => {});
         started = true;
-        console.log("Camera started with deviceId:", selectedCam.label);
-      } catch(e3) {
-        console.warn("Fallback 3 failed (deviceId):", e3);
-      }
+      } catch(e3) {}
     }
 
     if (!started) {
@@ -1462,11 +1431,9 @@ async function startScanner() {
     document.getElementById("btn-start").classList.add("hidden");
     document.getElementById("btn-stop").classList.remove("hidden");
 
-    // ขั้นตอนที่ 4: ลองตั้ง focusMode continuous (สำหรับ Android) — ทำหลัง start เพื่อไม่ให้เป็นอุปสรรคต่อ Safari
     try {
       const videoTrack = html5QrCode.getRunningTrackSettings && html5QrCode.getRunningTrackSettings();
       if (!videoTrack) {
-        // ลองดึง track จาก video element ตรงๆ
         const videoEl = document.querySelector("#reader video");
         if (videoEl && videoEl.srcObject) {
           const tracks = videoEl.srcObject.getVideoTracks();
@@ -1474,15 +1441,11 @@ async function startScanner() {
             const capabilities = tracks[0].getCapabilities ? tracks[0].getCapabilities() : {};
             if (capabilities.focusMode && capabilities.focusMode.includes("continuous")) {
               await tracks[0].applyConstraints({ advanced: [{ focusMode: "continuous" }] });
-              console.log("✅ Continuous focus enabled");
             }
           }
         }
       }
-    } catch(focusErr) {
-      // ไม่เป็นไร — iOS/Safari ไม่รองรับ focusMode ก็ข้ามไปเฉยๆ
-      console.log("Focus mode not supported on this device, skipping");
-    }
+    } catch(focusErr) {}
 
   } catch(err) {
     let errMsg = "ไม่สามารถเปิดกล้องได้";
@@ -1498,10 +1461,9 @@ async function startScanner() {
     }
     showError(errMsg);
     console.error("Camera Error:", err);
-    // Clean up
     if (html5QrCode) { try { await html5QrCode.clear(); } catch(ce){} }
     html5QrCode = null;
-    reader.innerHTML = `<div class="scanner-placeholder"><div class="big-icon">📷</div><p style="font-size:14px;font-weight:600;color:var(--text);">ไม่สามารถเปิดกล้องได้</p><p style="color:red;font-size:12px;margin-top:8px;">${escHtml(errMsg)}</p><p style="color:var(--text-muted);font-size:11px;margin-top:10px;">💡 ลองเปิดใน Chrome หรือ Safari บนมือถือ<br>และอนุญาตสิทธิ์กล้องในเบราว์เซอร์</p></div><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>`;
+    reader.innerHTML = `<div class="scanner-placeholder"><div class="big-icon">📷</div><p style="font-size:14px;font-weight:600;color:var(--text);">ไม่สามารถเปิดกล้องได้</p><p style="color:red;font-size:12px;margin-top:8px;">${escHtml(errMsg)}</p></div><div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>`;
   }
 }
 
