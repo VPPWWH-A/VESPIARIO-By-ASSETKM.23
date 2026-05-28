@@ -823,6 +823,10 @@ input[type="file"] { display: none; }
       </div>
     </div>
     <div class="btn-group">
+      <div style="grid-column: 1 / -1; margin-bottom: 8px;">
+        <label for="handheld-input" style="font-size: 12px; color: var(--text-dim); font-weight: bold; margin-bottom: 6px; display: block; text-align: left;">📟 สำหรับเครื่อง Handheld (แตะที่ช่องนี้แล้วสแกน)</label>
+        <input type="text" id="handheld-input" style="width: 100%; padding: 14px; border: 2px solid var(--primary); border-radius: var(--radius-sm); font-size: 16px; text-align: center; background: var(--bg); color: var(--text);" placeholder="แตะที่นี่เพื่อโฟกัส แล้วยิงสแกนบาร์โค้ด..." autocomplete="off">
+      </div>
       <button id="btn-start" class="btn btn-primary btn-full" onclick="startScanner()">📷 เปิดกล้องสแกน</button>
       <button id="btn-stop" class="btn btn-danger btn-full hidden" onclick="stopScanner()">⏹️ ปิดกล้อง</button>
       <button class="btn btn-primary btn-full" onclick="openManualAddModal()" style="margin-top:4px;">➕ สินค้าบาร์โค้ดเสียหาย / สแกนไม่ได้</button>
@@ -1456,6 +1460,12 @@ function showPage(page) {
   if (navBtn) navBtn.classList.add("active");
   if (page === "dashboard") loadDashboard();
   if (page === "label") updateLabelPreview();
+  if (page === "scan") {
+    setTimeout(() => {
+      const hhInput = document.getElementById("handheld-input");
+      if (hhInput) hhInput.focus();
+    }, 100);
+  }
 }
 
 // ==================== TABS & PILLARS ====================
@@ -1573,6 +1583,12 @@ function showSuccess(data) {
 
 function closeScanConfirmModal() {
   document.getElementById("modal-scan-confirm").classList.add("hidden");
+  if (currentPage === "scan") {
+    setTimeout(() => {
+      const hhInput = document.getElementById("handheld-input");
+      if (hhInput) hhInput.focus();
+    }, 100);
+  }
 }
 
 function previewScanImage(event) {
@@ -3075,6 +3091,55 @@ function updateAddZones() { updateZones('input-warehouse', 'input-area'); }
 updateLabelPreview();
 // 🚀 โหลดข้อมูลทั้งหมดเก็บไว้ในเครื่องเบื้องหลังทันทีที่เปิดแอป (Silent Background Load)
 loadDashboard(true);
+
+setTimeout(() => {
+  if (currentPage === "scan") {
+    const hhInput = document.getElementById("handheld-input");
+    if (hhInput) hhInput.focus();
+  }
+}, 300);
+
+// ==================== HANDHELD SCANNER ====================
+let handheldBuffer = "";
+let lastHandheldTime = Date.now();
+
+document.addEventListener("keydown", function(e) {
+  // ไม่ดักจับถ้ากำลังพิมพ์ใน input, textarea หรือ select
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+    return;
+  }
+
+  const currentTime = Date.now();
+  // ถ้าระยะห่างการกดแต่ละปุ่มเกิน 50ms ให้ถือว่าเป็นการพิมพ์ด้วยมือ (ไม่ใช่ Scanner) แล้วรีเซ็ต
+  if (currentTime - lastHandheldTime > 50) {
+    handheldBuffer = "";
+  }
+  
+  lastHandheldTime = currentTime;
+
+  if (e.key === "Enter") {
+    if (handheldBuffer.length > 0) {
+      e.preventDefault();
+      // เรียกใช้ฟังก์ชันสแกนหลัก
+      onScanSuccess(handheldBuffer);
+      handheldBuffer = "";
+    }
+  } else if (e.key.length === 1) {
+    handheldBuffer += e.key;
+  }
+});
+
+// Listener สำหรับช่อง Input Handheld ในหน้า Scan โดยเฉพาะ
+document.getElementById('handheld-input').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') {
+    e.preventDefault();
+    const code = this.value.trim();
+    if (code) {
+      onScanSuccess(code);
+      this.value = ''; // เคลียร์ช่องเพื่อสแกนรอบต่อไป
+    }
+  }
+});
 </script>
 </body>
 </html>
