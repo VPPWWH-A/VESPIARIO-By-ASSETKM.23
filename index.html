@@ -1534,6 +1534,7 @@ let currentWarehouse = "all";
 // ==================== NAVIGATION ====================
 function showPage(page) {
   currentPage = page;
+  localStorage.setItem("lastActivePage", page); // บันทึกหน้าล่าสุด
   document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
   document.getElementById("page-" + page).classList.remove("hidden");
   
@@ -3266,6 +3267,10 @@ function updateAddZones() { updateZones('input-warehouse', 'input-area'); }
 
 // ==================== INIT ====================
 updateLabelPreview();
+
+// 🚀 โหลดหน้าล่าสุดที่ผู้ใช้เปิดค้างไว้ก่อนรีเฟรช (ถ้าไม่มีให้ไปหน้าแรก home)
+const lastPage = localStorage.getItem("lastActivePage") || "home";
+showPage(lastPage);
 
 // 🚀 โหลดข้อมูลทั้งหมดเก็บไว้ในเครื่องเบื้องหลังทันทีที่เปิดแอป (Silent Background Load)
 loadDashboard(true);
