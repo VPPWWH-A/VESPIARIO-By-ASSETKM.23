@@ -1797,6 +1797,7 @@ async function confirmScanCount() {
 
     // 🚀 Single POST request for everything (Count mark, Location update, Image upload)
     const payload = {
+      key: API_SECRET,
       action: "updateAsset",
       assetNo: pendingScanData.assetNo,
       assetName: pendingScanData.assetName || "",
