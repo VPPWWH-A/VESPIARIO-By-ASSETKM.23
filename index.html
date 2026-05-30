@@ -973,7 +973,7 @@ input[type="file"] { display: none; }
 
     <div class="dash-action-bar">
       <h3>สรุปผลการตรวจนับ</h3>
-      <button class="refresh-btn" id="refresh-btn" onclick="loadDashboard()">
+      <button class="refresh-btn" id="refresh-btn" onclick="loadDashboard(false, true)">
         <span class="refresh-icon">🔄</span> รีเฟรช
       </button>
     </div>
@@ -2756,7 +2756,7 @@ function clearDateFilter() {
   filterTable();
 }
 
-async function loadDashboard(isSilent = false) {
+async function loadDashboard(isSilent = false, forceClearCache = false) {
   // Spinning refresh button
   const btn = document.getElementById("refresh-btn");
   if (btn) btn.classList.add("spinning");
@@ -2770,44 +2770,8 @@ async function loadDashboard(isSilent = false) {
   }
 
   try {
-    const [resp1, resp2] = await Promise.all([
-      fetch(apiUrl({ action: "dashboard" })).catch(() => null),
-      fetch(apiUrl({ action: "export"    })).catch(() => null),
-    ]);
-
-    if (resp1) {
-      const data = await resp1.json().catch(() => null);
-      if (data && data.status === "ok" && data.summary) {
-        document.getElementById("dash-checked").textContent = data.summary.checked.toLocaleString();
-        
-        const pending = Math.max(0, data.summary.totalAssets - data.summary.checked);
-        const pendingEl = document.getElementById("dash-pending");
-        if (pendingEl) pendingEl.textContent = pending.toLocaleString();
-        
-        // Update Progress Bar
-        const t = data.summary.totalAssets;
-        const c = data.summary.checked;
-        if (t > 0) {
-          let checkedPct = Math.round((c / t) * 100);
-          if (checkedPct > 100) checkedPct = 100;
-          let pendingPct = Math.round((pending / t) * 100);
-          if (pendingPct < 0) pendingPct = 0;
-          
-          document.getElementById("dash-pct-checked").textContent = checkedPct + "%";
-          document.getElementById("dash-pct-pending").textContent = pendingPct + "%";
-          document.getElementById("dash-progress-bar").style.width = checkedPct + "%";
-        } else {
-          document.getElementById("dash-pct-checked").textContent = "0%";
-          document.getElementById("dash-pct-pending").textContent = "0%";
-          document.getElementById("dash-progress-bar").style.width = "0%";
-        }
-
-        // แสดงชื่อเดือนใน card footer
-        if (data.summary.currentMonthName) {
-          document.getElementById("dash-month-label").textContent = data.summary.currentMonthName;
-        }
-      }
-    }
+    const queryAppend = forceClearCache ? "&nocache=1" : "";
+    const resp2 = await fetch(apiUrl({ action: "export" }) + queryAppend).catch(() => null);
 
     if (resp2) {
       const data2 = await resp2.json().catch(() => null);
@@ -2835,6 +2799,42 @@ async function loadDashboard(isSilent = false) {
           renderUnregTable();
         }
         document.getElementById("dash-total").textContent = data2.total.toLocaleString();
+
+        // --- Calculate Dashboard Summary on Frontend ---
+        const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
+        const d = new Date();
+        const currentMonthName = "เช็ค " + months[d.getMonth()] + " " + d.getFullYear();
+        
+        let currentMonthIndex = exportHeaders.indexOf(currentMonthName);
+        if (currentMonthIndex === -1) currentMonthIndex = exportHeaders.length; // fallback
+        
+        let checkedCount = 0;
+        allAssets.forEach(row => {
+          if (row[currentMonthIndex] === "Count" || row[currentMonthIndex] === "Checked") checkedCount++;
+        });
+        
+        const totalAssets = data2.total;
+        document.getElementById("dash-checked").textContent = checkedCount.toLocaleString();
+        
+        const pending = Math.max(0, totalAssets - checkedCount);
+        const pendingEl = document.getElementById("dash-pending");
+        if (pendingEl) pendingEl.textContent = pending.toLocaleString();
+        
+        if (totalAssets > 0) {
+          let checkedPct = Math.round((checkedCount / totalAssets) * 100);
+          if (checkedPct > 100) checkedPct = 100;
+          let pendingPct = Math.round((pending / totalAssets) * 100);
+          if (pendingPct < 0) pendingPct = 0;
+          
+          document.getElementById("dash-pct-checked").textContent = checkedPct + "%";
+          document.getElementById("dash-pct-pending").textContent = pendingPct + "%";
+          document.getElementById("dash-progress-bar").style.width = checkedPct + "%";
+        } else {
+          document.getElementById("dash-pct-checked").textContent = "0%";
+          document.getElementById("dash-pct-pending").textContent = "0%";
+          document.getElementById("dash-progress-bar").style.width = "0%";
+        }
+        document.getElementById("dash-month-label").textContent = currentMonthName;
       }
     }
   } catch(err) {
