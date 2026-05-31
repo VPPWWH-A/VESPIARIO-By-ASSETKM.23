@@ -834,7 +834,7 @@ input[type="file"] { display: none; }
           <div style="font-size: 13px; color: rgba(255,255,255,0.8); margin-top: 4px;">ดูรายการทรัพย์สินและรายงานต่างๆ</div>
         </div>
 
-        <div onclick="window.location.reload()" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; box-shadow: var(--shadow); cursor: pointer; color: var(--text-dim); margin-top: 8px; font-weight: 700; display: flex; justify-content: center; align-items: center; gap: 8px;">
+        <div onclick="refreshCurrentView()" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; text-align: center; box-shadow: var(--shadow); cursor: pointer; color: var(--text-dim); margin-top: 8px; font-weight: 700; display: flex; justify-content: center; align-items: center; gap: 8px;">
           <span style="font-size: 20px;">🔄</span> รีเฟรชแอปพลิเคชัน
         </div>
       </div>
@@ -857,7 +857,7 @@ input[type="file"] { display: none; }
       <button id="btn-start" class="btn btn-primary btn-full" onclick="startScanner()">📷 เปิดกล้องสแกน</button>
       <button id="btn-stop" class="btn btn-danger btn-full hidden" onclick="stopScanner()">⏹️ ปิดกล้อง</button>
       <button class="btn btn-primary btn-full" onclick="openManualAddModal()" style="margin-top:4px;">➕ สินค้าบาร์โค้ดเสียหาย / สแกนไม่ได้</button>
-      <button class="btn btn-secondary btn-full" onclick="window.location.reload()" style="margin-top:4px;">🔄 รีเฟรชแอป</button>
+      <button class="btn btn-secondary btn-full" onclick="refreshCurrentView()" style="margin-top:4px;">🔄 รีเฟรชแอป</button>
       <button class="btn btn-gold btn-full" onclick="showInstallModal()" style="margin-top:4px; font-weight: bold;">📲 นำแอปลงหน้าจอหลัก (Install)</button>
     </div>
     <div id="result"></div>
@@ -870,7 +870,7 @@ input[type="file"] { display: none; }
       <h2 style="font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px;">โหมดเครื่องสแกน Handheld</h2>
       <p style="font-size: 13px; color: var(--text-muted); margin-bottom: 16px;">หน้าจอนี้ออกแบบมาเพื่อการสแกนที่รวดเร็ว</p>
       
-      <button class="btn btn-secondary" onclick="window.location.reload()" style="margin: 0 auto 16px; display: inline-flex;"><span class="icon">🔄</span> รีเฟรชหน้าจอ</button>
+      <button class="btn btn-secondary" onclick="refreshCurrentView()" style="margin: 0 auto 16px; display: inline-flex;"><span class="icon">🔄</span> รีเฟรชหน้าจอ</button>
 
       <input type="text" id="handheld-input" style="width: 100%; padding: 20px; border: 3px solid var(--primary); border-radius: var(--radius); font-size: 24px; text-align: center; background: var(--bg); color: var(--text); font-weight: 900; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05);" placeholder="ยิงสแกนบาร์โค้ดที่นี่..." autocomplete="off">
       
@@ -1592,6 +1592,47 @@ async function fetchAssetLookupWithTimeout(cleanCode, timeoutMs = 1200) {
     return null;
   } finally {
     clearTimeout(timer);
+  }
+}
+
+async function refreshCurrentView() {
+  const btn = document.getElementById("refresh-btn");
+  if (btn) btn.classList.add("spinning");
+
+  try {
+    const resp = await fetch(apiUrl({ action: "export", nocache: "1" })).catch(() => null);
+    const data = resp ? await resp.json().catch(() => null) : null;
+    if (data && data.status === "ok" && Array.isArray(data.assets)) {
+      exportHeaders = data.headers || [];
+      exportUnregHeaders = data.unregHeaders || [];
+      allAssets = [...data.assets].sort((a, b) => {
+        const da = a[7] ? new Date(a[7]).getTime() : 0;
+        const db = b[7] ? new Date(b[7]).getTime() : 0;
+        return db - da;
+      });
+      allUnregAssets = [...(data.unregAssets || [])].sort((a, b) => {
+        const da = a[6] ? new Date(a[6]).getTime() : 0;
+        const db = b[6] ? new Date(b[6]).getTime() : 0;
+        return db - da;
+      });
+
+      if (currentPage === "dashboard") {
+        renderTable(allAssets);
+      } else if (currentPage === "home") {
+        renderTable(allAssets);
+        renderUnregTable();
+      } else if (currentPillar === "count") {
+        renderTable(allAssets);
+      } else {
+        renderUnregTable();
+      }
+
+      if (currentPage === "dashboard") {
+        loadDashboard(true, true);
+      }
+    }
+  } finally {
+    if (btn) btn.classList.remove("spinning");
   }
 }
 let html5QrCode = null, isScanning = false, isProcessing = false;
