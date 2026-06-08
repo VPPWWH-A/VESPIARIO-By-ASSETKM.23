@@ -1639,6 +1639,42 @@ async function refreshCurrentView() {
   }
 }
 
+async function fetchScanStatusWithTimeout(cleanCode, timeoutMs = 900) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const res = await fetch(apiUrl({ action: "scanStatus", assetNo: cleanCode }), { signal: controller.signal });
+    const data = await res.json().catch(() => null);
+    if (data && data.status === "success") return data;
+    return null;
+  } catch (e) {
+    return null;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+function showScanStatusNotice(assetNo, scanStatus) {
+  const state = String(scanStatus.scanStatus || "").toLowerCase();
+  const ref = scanStatus.requestId ? `<div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Ref: ${escHtml(scanStatus.requestId)}</div>` : "";
+  const timeText = scanStatus.createdAt ? `<div style="font-size:12px;color:var(--text-muted);margin-top:4px;">${escHtml(formatDateTime(scanStatus.createdAt))}</div>` : "";
+  const isPending = state === "received" || state === "processing";
+  const isFailed = state === "failed";
+  const title = isPending ? "ส่งข้อมูลแล้ว รอหลังบ้าน" : (isFailed ? "เคยส่งแล้วแต่ไม่สำเร็จ" : "รหัสนี้เคยนับแล้ว");
+  const icon = isPending ? "⏳" : (isFailed ? "⚠️" : "✅");
+  const cardClass = isFailed ? "warning" : "success";
+  setResult(`
+    <div class="result-card ${cardClass}">
+      <div style="font-size:36px;margin-bottom:8px;">${icon}</div>
+      <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">${escHtml(title)}</div>
+      <div style="font-size:22px;font-weight:800;margin-top:4px;">${escHtml(assetNo)}</div>
+      <div style="font-size:13px;color:var(--text-dim);margin-top:4px;">${escHtml(scanStatus.message || scanStatus.action || state)}</div>
+      ${ref}
+      ${timeText}
+    </div>
+  `);
+}
+
 let isDashboardLoading = false;
 
 function applyExportData(data2) {
@@ -1711,6 +1747,7 @@ let currentWarehouse = "all";
 // ==================== NAVIGATION ====================
 function showPage(page) {
   if (page === "dashboard") {
+    localStorage.setItem("lastActivePage", "home");
     window.location.href = "dashboard.html";
     return;
   }
@@ -2154,6 +2191,19 @@ async function onScanSuccess(decodedText, isHandheld = false) {
   dbgLog('index.html:onScanSuccess:entry', 'scan started', { cleanCode, cacheSize: allAssets.length, unregSize: allUnregAssets.length }, 'H1-H2');
   // #endregion
   
+  const scanStatus = await fetchScanStatusWithTimeout(cleanCode, isHandheld ? 650 : 900);
+  if (scanStatus && scanStatus.found) {
+    const state = String(scanStatus.scanStatus || "").toLowerCase();
+    if (state === "done" || state === "received" || state === "processing") {
+      showScanStatusNotice(cleanCode, scanStatus);
+      setTimeout(async () => {
+        isProcessing = false;
+        if (html5QrCode && isScanning && !isHandheld) { try { await html5QrCode.resume(); } catch(e){} }
+      }, isHandheld ? 100 : 1400);
+      return;
+    }
+  }
+
   // 🚀 Instant Local Search (Performance Optimization)
   const localMatch = allAssets.find(row => String(row[0]).trim().toUpperCase() === cleanCode);
   const liveLookupPromise = localMatch ? fetchAssetLookupWithTimeout(cleanCode, isHandheld ? 900 : 1200) : Promise.resolve(null);
@@ -3555,7 +3605,13 @@ function updateAddZones() { updateZones('input-warehouse', 'input-area'); }
 updateLabelPreview();
 
 // 🚀 โหลดหน้าล่าสุดที่ผู้ใช้เปิดค้างไว้ก่อนรีเฟรช (ถ้าไม่มีให้ไปหน้าแรก home)
-const lastPage = localStorage.getItem("lastActivePage") || "home";
+const initialParams = new URLSearchParams(window.location.search);
+const requestedPage = initialParams.get("page");
+if (requestedPage === "home") {
+  localStorage.setItem("lastActivePage", "home");
+}
+const storedLastPage = localStorage.getItem("lastActivePage") || "home";
+const lastPage = (requestedPage && requestedPage !== "dashboard") ? requestedPage : (storedLastPage === "dashboard" ? "home" : storedLastPage);
 showPage(lastPage);
 
 // 🚀 โหลดข้อมูลทั้งหมดเก็บไว้ในเครื่องเบื้องหลังทันทีที่เปิดแอป (Silent Background Load)
