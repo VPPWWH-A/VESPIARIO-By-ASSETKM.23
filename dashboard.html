@@ -429,17 +429,27 @@ function renderUnregTable(data) {
   const tbody = document.getElementById("table-unreg-body");
   const sorted = [...data].sort((a,b) => new Date(b[6]).getTime() - new Date(a[6]).getTime());
   
-  tbody.innerHTML = sorted.map(r => `
-    <div class="table-row unreg">
-      <div>${r[6] ? new Date(r[6]).toLocaleString('th-TH') : '-'}</div>
-      <div style="font-weight:bold;">${r[0]}</div>
-      <div><span class="cat-tag" style="background:var(--warning-bg); color:var(--warning);">${r[2]}</span></div>
-      <div>${r[1]} / ${r[4]}</div>
-      <div>${r[3]}</div>
-      <div style="color:var(--danger); font-size:11px;">${r[5] || '-'}</div>
-      <div><button class="row-btn approve-action" style="background:var(--success); color:white;" onclick="confirmUnreg('${r[0]}')">อนุมัติ</button></div>
-    </div>
-  `).join('');
+  tbody.innerHTML = sorted.map(r => {
+    const assetName = String(r[1] || "").trim();
+    const category = String(r[2] || "").trim();
+    const warehouse = String(r[3] || "").trim();
+    const area = String(r[4] || "").trim();
+    const remarks = String(r[5] || "").trim();
+    return `
+      <div class="table-row unreg">
+        <div>${r[6] ? new Date(r[6]).toLocaleString('th-TH') : '-'}</div>
+        <div style="font-weight:bold;">${r[0]}</div>
+        <div><span class="cat-tag" style="background:var(--warning-bg); color:var(--warning);">${category || '-'}</span></div>
+        <div>
+          <div style="font-weight:700;">${assetName || '<span style="color:var(--danger);">ไม่ระบุชื่อ/โมเดล</span>'}</div>
+          <div style="font-size:11px; color:var(--text-dim); margin-top:3px;">${area || '-'}</div>
+        </div>
+        <div>${warehouse || '-'}</div>
+        <div style="color:var(--danger); font-size:11px;">${remarks || '-'}</div>
+        <div><button class="row-btn approve-action" style="background:var(--success); color:white;" onclick="confirmUnreg('${r[0]}')">อนุมัติ</button></div>
+      </div>
+    `;
+  }).join('');
   updateAuthUi();
 }
 
