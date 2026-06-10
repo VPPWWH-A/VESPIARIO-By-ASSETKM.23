@@ -2740,8 +2740,7 @@ async function startScanner() {
         return { width, height };
       },
       formatsToSupport: formats,
-      disableFlip: true,
-      videoConstraints: { focusMode: "continuous" }
+      disableFlip: true
     };
 
     let didStart = false;
@@ -2758,22 +2757,15 @@ async function startScanner() {
       try {
         try { await html5QrCode.clear(); } catch(ce){}
         html5QrCode = new Html5Qrcode("reader", { experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
-        let backCam = cameras.find(c => /back|rear|environment|หลัง/i.test(c.label));
-        let selectedCam = backCam || cameras[cameras.length - 1];
+        let teleCam = cameras.find(c => /(telephoto|macro|close)/i.test(c.label) && /(back|rear|environment|หลัง)/i.test(c.label));
+        let mainCam = cameras.find(c => /(back|rear|environment|หลัง)/i.test(c.label) && !/(ultra|wide)/i.test(c.label));
+        let selectedCam = teleCam || mainCam || cameras.find(c => /(back|rear|environment|หลัง)/i.test(c.label)) || cameras[0];
         await html5QrCode.start({ deviceId: { exact: selectedCam.id } }, config, onScanSuccess, () => {});
         didStart = true;
       } catch (e2) {}
     }
 
-    // ทางเลือกสุดท้าย: ใช้กล้องหน้าเผื่อเทสในคอมพิวเตอร์
-    if (!didStart) {
-      try {
-        try { await html5QrCode.clear(); } catch(ce){}
-        html5QrCode = new Html5Qrcode("reader", { experimentalFeatures: { useBarCodeDetectorIfSupported: true } });
-        await html5QrCode.start({ facingMode: "user" }, config, onScanSuccess, () => {});
-        didStart = true;
-      } catch (e3) {}
-    }
+    
 
     if (!didStart) {
       throw new Error("ไม่สามารถเปิดกล้องได้ในทุกโหมด — กรุณาตรวจสอบสิทธิ์กล้องและลองอีกครั้ง");
@@ -4087,6 +4079,10 @@ document.getElementById('handheld-input').addEventListener('keydown', function(e
 </script>
 </body>
 </html>
+
+
+
+
 
 
 
