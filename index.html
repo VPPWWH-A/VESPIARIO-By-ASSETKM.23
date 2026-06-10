@@ -2569,9 +2569,7 @@ async function startScanner() {
     if (cachedCameraId) {
       try {
         const cameraConstraints = {
-          deviceId: { exact: cachedCameraId },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          deviceId: { exact: cachedCameraId }
         };
         await html5QrCode.start(cameraConstraints, config, onScanSuccess, () => {});
         didStart = true;
@@ -2580,32 +2578,18 @@ async function startScanner() {
       }
     }
 
-    // If cache failed or empty, request cameras
+    // If cache failed or empty, use facingMode
     if (!didStart) {
       try {
-        const cameras = await Html5Qrcode.getCameras();
-        if (!cameras || cameras.length === 0) {
-          throw new Error("ไม่พบกล้องบนอุปกรณ์นี้");
-        }
-        const rearCamera = cameras.find(c => /back|rear|environment|หลัง/i.test(c.label));
-        cachedCameraId = rearCamera ? rearCamera.id : cameras[cameras.length - 1].id;
-
-        const cameraConstraints = {
-          deviceId: { exact: cachedCameraId },
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        };
-        await html5QrCode.start(cameraConstraints, config, onScanSuccess, () => {});
-        didStart = true;
-      } catch (error) {
-        cachedCameraId = null;
         const fallbackConstraints = {
-          facingMode: "environment",
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
+          facingMode: "environment"
         };
         await html5QrCode.start(fallbackConstraints, config, onScanSuccess, () => {});
         didStart = true;
+      } catch (error) {
+        cachedCameraId = null;
+        // Last resort: generic constraints
+        await html5QrCode.start({ facingMode: { ideal: "environment" } }, config, onScanSuccess, () => {});
       }
     }
 
