@@ -1074,7 +1074,7 @@ input[type="file"] { display: none; }
       
       <button class="btn btn-secondary" onclick="refreshCurrentView()" style="margin: 0 auto 16px; display: inline-flex;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>รีเฟรชหน้าจอ</button>
 
-      <div id="handheld-input" tabindex="0" role="textbox" aria-label="ยิงสแกนบาร์โค้ดที่นี่" style="width: 100%; min-height: 72px; padding: 16px 12px; border: 3px solid var(--primary); border-radius: var(--radius); font-size: 22px; text-align: center; background: var(--bg); color: var(--text); font-weight: 900; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:center; word-break:break-word; outline:none;">ยิงสแกนบาร์โค้ดที่นี่</div>
+      <input type="text" id="handheld-input" inputmode="none" enterkeyhint="done" style="width: 100%; min-height: 72px; padding: 16px 12px; border: 3px solid var(--primary); border-radius: var(--radius); font-size: 22px; text-align: center; background: var(--bg); color: var(--text); font-weight: 900; box-shadow: inset 0 2px 4px rgba(0,0,0,0.05); outline:none;" placeholder="ยิงสแกนบาร์โค้ดที่นี่" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false">
       
       <div style="margin-top: 16px; font-size: 12px; color: var(--text-muted); font-weight: 600;">
         * ระบบจะบันทึกข้อมูลและดึงผลลัพธ์อัตโนมัติ
@@ -4258,8 +4258,9 @@ function setHandheldDisplay(text, isPlaceholder) {
   const display = document.getElementById("handheld-input");
   if (!display) return;
 
-  display.textContent = text || HANDHELD_PLACEHOLDER;
-  display.style.color = isPlaceholder ? "var(--text-muted)" : "var(--text)";
+  display.value = isPlaceholder ? "" : (text || "");
+  display.placeholder = HANDHELD_PLACEHOLDER;
+  display.style.color = "var(--text)";
 }
 
 function playHandheldBeep() {
@@ -4348,7 +4349,7 @@ function submitHandheldCode(code, sourceInput) {
   handheldBuffer = "";
 
   if (sourceInput) {
-    setHandheldDisplay(HANDHELD_PLACEHOLDER, true);
+    sourceInput.value = "";
     sourceInput.focus();
   }
 }
@@ -4398,8 +4399,21 @@ handheldInput.addEventListener('keydown', function(e) {
       clearTimeout(handheldInputTimer);
       handheldInputTimer = null;
     }
-    submitHandheldCode(handheldBuffer, this);
+    submitHandheldCode(this.value || handheldBuffer, this);
   }
+});
+
+handheldInput.addEventListener('input', function() {
+  handheldBuffer = this.value;
+
+  if (handheldInputTimer) {
+    clearTimeout(handheldInputTimer);
+  }
+
+  handheldInputTimer = setTimeout(() => {
+    submitHandheldCode(this.value, this);
+    handheldInputTimer = null;
+  }, 250);
 });
 
 setHandheldDisplay(HANDHELD_PLACEHOLDER, true);
