@@ -55,25 +55,7 @@ body {
 }
 
 /* ===== TOP BAR ===== */
-.top-bar {
-  background: rgba(244, 241, 234, 0.78);
-  padding: 18px 20px;
-  border-bottom: 1px solid rgba(15, 93, 115, 0.08);
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  backdrop-filter: blur(18px);
-}
 
-.top-bar-inner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  flex-wrap: wrap;
-  max-width: 1400px;
-  margin: 0 auto;
-}
 
 .brand {
   display: flex;
@@ -110,99 +92,18 @@ body {
 }
 
 /* Search & Filter Row */
-.filter-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex: 1;
-  justify-content: flex-end;
-  flex-wrap: wrap;
-}
 
-.search-box {
-  position: relative;
-  flex: 1;
-  max-width: 300px;
-  min-width: 180px;
-}
 
-.search-box input {
-  width: 100%;
-  padding: 12px 14px 12px 38px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  background: rgba(255,255,255,0.75);
-  color: var(--text);
-}
 
-.search-box input::placeholder { color: var(--text-muted); }
 
-.search-box .search-icon {
-  position: absolute;
-  left: 10px;
-  top: 50%;
-  transform: translateY(-50%);
-  color: var(--text-muted);
-  font-size: 13px;
-}
 
-.date-range {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
 
-.date-range input {
-  padding: 11px 12px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 12px;
-  background: rgba(255,255,255,0.75);
-  color: var(--text);
-  width: 110px;
-}
 
-.date-range .arrow {
-  color: var(--text-muted);
-  font-size: 12px;
-}
 
-.action-btns {
-  display: flex;
-  gap: 6px;
-}
 
-.action-btn {
-  padding: 11px 16px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: rgba(255,255,255,0.75);
-  color: var(--text-dim);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: all 0.2s;
-}
 
-.action-btn:hover {
-  background: var(--bg);
-  border-color: var(--primary);
-  color: var(--primary);
-}
 
-.action-btn.primary {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-}
 
-.action-btn.primary:hover {
-  background: var(--primary-light);
-}
 
 /* ===== MAIN CONTENT ===== */
 .main-content {
@@ -901,52 +802,14 @@ input[type="file"] { display: none; }
   color: var(--text-dim);
 }
 
-/* Dashboard action bar */
-.dash-action-bar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 16px;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
-.dash-action-bar h3 { font-size: 16px; color: var(--text); }
-
-.refresh-btn {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  padding: 7px 14px;
-  border: 1px solid var(--border);
-  border-radius: var(--radius-sm);
-  background: var(--bg-card);
-  color: var(--text-dim);
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.refresh-btn:hover {
-  border-color: var(--primary);
-  color: var(--primary);
-}
-
-.refresh-btn.spinning .refresh-icon { display: inline-block; animation: spin 0.8s linear infinite; }
 
 @media (max-width: 768px) {
-  .top-bar-inner { flex-direction: column; align-items: stretch; }
-  .filter-row { justify-content: stretch; }
-  .search-box { max-width: none; }
-  .main-content { padding: 16px 16px calc(100px + env(safe-area-inset-bottom)); }
+        .main-content { padding: 16px 16px calc(100px + env(safe-area-inset-bottom)); }
 }
 
 @media (max-width: 600px) {
   body { font-size: 13px; }
-  .top-bar { padding: 10px 12px; }
-  .top-bar-inner { gap: 10px; }
-  .brand-icon { width: 32px; height: 32px; }
+      .brand-icon { width: 32px; height: 32px; }
   .brand-text .name { font-size: 14px; }
   .brand-text .sub { font-size: 10px; }
   .main-content { padding: 12px 12px calc(92px + env(safe-area-inset-bottom)); }
@@ -955,7 +818,7 @@ input[type="file"] { display: none; }
   .home-grid { grid-template-columns: 1fr; gap: 10px; }
   .home-card { min-height: 132px; padding: 18px 12px; }
   .home-card-title { font-size: 14px; line-height: 1.35; overflow-wrap: anywhere; }
-  .btn, .action-btn, .control-btn { min-height: 44px; white-space: normal; line-height: 1.25; }
+  .btn, .control-btn { min-height: 44px; white-space: normal; line-height: 1.25; }
   .btn-group { gap: 8px; }
   .form-row, .modal-grid { grid-template-columns: 1fr; }
   .form-field input, .form-field select { min-height: 44px; font-size: 16px; }
@@ -1006,8 +869,7 @@ input[type="file"] { display: none; }
 }
 
 @media (max-height: 560px) and (orientation: landscape) {
-  .top-bar { position: static; padding: 8px 12px; }
-  .main-content { padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
+    .main-content { padding-bottom: calc(78px + env(safe-area-inset-bottom)); }
   #reader { max-height: 58dvh; aspect-ratio: 16 / 9; }
   .modal-overlay { align-items: center; }
   .modal-body { max-height: calc(100dvh - 116px); }
@@ -1087,34 +949,6 @@ input[type="file"] { display: none; }
 <base target="_blank">
 </head>
 <body>
-
-<!-- TOP BAR -->
-<div class="top-bar" style="display: none;">
-  <div class="top-bar-inner">
-    <div class="brand">
-      <div class="brand-text">
-        <div class="name">VPPW (THAILAND) CO., LTD.</div>
-        <div class="sub">ทะเบียนทรัพย์สิน — KM.23</div>
-      </div>
-    </div>
-    <div class="filter-row">
-      <div class="search-box">
-        <span class="search-icon">🔍</span>
-        <input type="text" id="search-input" placeholder="ค้นหา รหัส / ชื่อ / หมวดหมู่..." oninput="filterTable()">
-      </div>
-      <div class="date-range">
-        <input type="date" id="date-from" onchange="filterTable()">
-        <span class="arrow">→</span>
-        <input type="date" id="date-to" onchange="filterTable()">
-        <button class="action-btn" onclick="clearDateFilter()" title="ล้างวันที่" style="padding:8px 10px;">✕</button>
-      </div>
-      <div class="action-btns">
-        <button class="action-btn" onclick="exportExcel()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>Excel</button>
-        <button class="action-btn primary" onclick="window.print()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg>Print</button>
-      </div>
-    </div>
-  </div>
-</div>
 
 <!-- MAIN -->
 <div class="main-content">
@@ -1414,7 +1248,7 @@ input[type="file"] { display: none; }
         </select>
       </div>
       <div class="form-row" id="manual-location-fields">
-        <div class="form-field">
+        <div class="form-field" id="manual-loc-group-field">
           <label>คลัง / โซนหลัก <span class="req">*</span></label>
           <select id="manual-loc-group" onchange="updateManualZones()">
             <option value="">เลือก</option>
@@ -1425,7 +1259,7 @@ input[type="file"] { display: none; }
             <option value="HR">HR</option>
           </select>
         </div>
-        <div class="form-field">
+        <div class="form-field" id="manual-area-field">
           <label>พื้นที่ย่อย <span class="req">*</span></label>
           <select id="manual-area">
             <option value="">โปรดเลือกโซนหลักก่อน</option>
@@ -1466,84 +1300,6 @@ input[type="file"] { display: none; }
         บันทึกและอัปโหลด
       </button>
       <button class="btn btn-secondary" onclick="closeManualAddModal()">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        ยกเลิก
-      </button>
-    </div>
-  </div>
-</div>
-
-<!-- Modal Approve Login -->
-<div id="modal-approve-login" class="modal-overlay hidden" onclick="closeApproveLoginModal()">
-  <div class="modal-box" style="max-width:360px;" onclick="event.stopPropagation()">
-    <div class="modal-header" style="background: #ffffff; border-bottom: 1px solid var(--border); color: var(--text);">
-      <div class="modal-title-row">
-        <span class="modal-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success);"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-        </span>
-        <div>
-          <div class="modal-title" style="color: var(--text-dim);">เข้าสู่ระบบอนุมัติ (Admin Login)</div>
-          <div class="modal-subtitle" style="color:var(--text-muted);font-size:12px;font-weight:400;margin-top:2px;">กรุณากรอกรหัสผ่านเพื่อยืนยันทั้งหมด</div>
-        </div>
-      </div>
-      <button class="modal-close" onclick="closeApproveLoginModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="form-field">
-        <label>Username</label>
-        <input type="text" id="approve-username" class="auth-input" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none;" placeholder="ชื่อผู้ใช้">
-      </div>
-      <div class="form-field" style="margin-top:10px;">
-        <label>Password</label>
-        <input type="password" id="approve-password" class="auth-input" style="width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius-sm); outline: none;" placeholder="รหัสผ่าน" onkeydown="if(event.key==='Enter') submitApproveAll()">
-      </div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn btn-success" id="btn-approve-login" onclick="submitApproveAll()" style="width:100%;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-        เข้าสู่ระบบและอนุมัติ
-      </button>
-    </div>
-  </div>
-</div>
-
- 
-
-<!-- Modal Confirm Unreg -->
-<div id="modal-confirm-unreg" class="modal-overlay hidden" onclick="closeConfirmUnregModal()">
-  <div class="modal-box" onclick="event.stopPropagation()">
-    <div class="modal-header" style="background: #ffffff; border-bottom: 1px solid var(--border); color: var(--text);">
-      <div class="modal-title-row">
-        <span class="modal-icon">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--success);"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        </span>
-        <div>
-          <div class="modal-title" style="color: var(--text-dim);">ยืนยันเพิ่มข้อมูลเข้าสู่ระบบ</div>
-          <div class="modal-subtitle" style="color:var(--text-muted);font-size:12px;font-weight:400;margin-top:2px;">ตรวจสอบข้อมูลก่อนบันทึก</div>
-        </div>
-      </div>
-      <button class="modal-close" onclick="closeConfirmUnregModal()">✕</button>
-    </div>
-    <div class="modal-body">
-      <div style="background:var(--bg); padding:12px; border-radius:8px; margin-bottom:16px; border: 1px solid var(--border);">
-        <div style="margin-bottom:8px;"><strong>Temp ID:</strong> <span id="confirm-unreg-id"></span></div>
-        <div style="margin-bottom:8px;"><strong>ชื่อทรัพย์สิน:</strong> <span id="confirm-unreg-name"></span></div>
-        <div style="margin-bottom:8px;"><strong>หมวดหมู่:</strong> <span id="confirm-unreg-cat"></span></div>
-        <div style="margin-bottom:8px;"><strong>คลัง / พื้นที่:</strong> <span id="confirm-unreg-wh"></span></div>
-        <div style="margin-bottom:8px;color:var(--danger)"><strong>หมายเหตุ:</strong> <span id="confirm-unreg-remark"></span></div>
-      </div>
-      <p id="confirm-unreg-text" style="margin:0; color:var(--text-dim); text-align:center; font-size:13px;">ระบบจะตรวจสอบข้อมูลก่อนเพิ่มเข้าระบบ<br>ยืนยันการทำรายการ?</p>
-      <div id="confirm-unreg-duplicate-warning" class="hidden" style="margin-top:12px; padding:10px; background:#fee2e2; border:1px solid #f87171; border-radius:8px; color:#b91c1c; text-align:center; font-size:13px;">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; display:inline-block; vertical-align:middle;"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
-        <b>คำเตือน:</b> รหัสสินค้านี้มีในระบบแล้ว ไม่สามารถเพิ่มซ้ำได้
-      </div>
-    </div>
-    <div class="modal-footer" id="modal-confirm-unreg-footer">
-      <button class="btn btn-success" id="btn-confirm-unreg-submit">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
-        ยืนยันข้อมูล
-      </button>
-      <button class="btn btn-secondary" onclick="closeConfirmUnregModal()">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
         ยกเลิก
       </button>
@@ -1922,7 +1678,6 @@ function showScanStatusNotice(assetNo, scanStatus) {
   `);
 }
 
-let isDashboardLoading = false;
 
 function getCurrentBaseCountColName() {
   const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
@@ -1934,98 +1689,14 @@ function getCurrentCountColName(round = "1") {
   return getCurrentBaseCountColName() + " Count " + (String(round) === "2" ? "2" : "1");
 }
 
-function applyExportData(data2) {
-  // ✅ Validate input data structure
-  if (!data2 || typeof data2 !== 'object') {
-    console.error("Invalid export data received");
-    return;
-  }
-
-  exportHeaders = Array.isArray(data2.headers) ? data2.headers : [];
-  exportUnregHeaders = Array.isArray(data2.unregHeaders) ? data2.unregHeaders : [];
-  
-  // ✅ Ensure unregAssets is array
-  const unregAssetsRaw = Array.isArray(data2.unregAssets) ? data2.unregAssets : [];
-  allUnregAssets = [...unregAssetsRaw].sort((a, b) => {
-    const da = a && a[6] ? new Date(a[6]).getTime() : 0;
-    const db = b && b[6] ? new Date(b[6]).getTime() : 0;
-    return db - da;
-  });
-  
-  const unregEl = document.getElementById("dash-pillar-unreg");
-  if (unregEl) unregEl.textContent = allUnregAssets.length.toLocaleString();
-
-  // ✅ Ensure assets is array
-  const assetsRaw = Array.isArray(data2.assets) ? data2.assets : [];
-  allAssets = [...assetsRaw].sort((a, b) => {
-    const da = a && a[7] ? new Date(a[7]).getTime() : 0;
-    const db = b && b[7] ? new Date(b[7]).getTime() : 0;
-    return db - da;
-  });
-  
-  if (currentPillar === 'count') {
-    renderTable(allAssets);
-  } else {
-    renderUnregTable();
-  }
-
-  // ✅ Validate total before using
-  const totalAssets = typeof data2.total === 'number' ? Math.max(0, data2.total) : allAssets.length;
-  const dashTotalEl = document.getElementById("dash-total");
-  if (dashTotalEl) dashTotalEl.textContent = totalAssets.toLocaleString();
-
-  // --- Calculate Dashboard Summary on Frontend ---
-  const currentMonthName = getCurrentCountColName("1");
-  const legacyMonthName = getCurrentBaseCountColName();
-  
-  let currentMonthIndex = exportHeaders.indexOf(currentMonthName);
-  const legacyMonthIndex = exportHeaders.indexOf(legacyMonthName);
-  if (currentMonthIndex === -1) currentMonthIndex = exportHeaders.length; // fallback
-  
-  let checkedCount = 0;
-  allAssets.forEach(row => {
-    if (row && (row[currentMonthIndex] === "Count" || row[currentMonthIndex] === "Checked" || row[legacyMonthIndex] === "Count" || row[legacyMonthIndex] === "Checked")) {
-      checkedCount++;
-    }
-  });
-  
-  const dashCheckedEl = document.getElementById("dash-checked");
-  if (dashCheckedEl) dashCheckedEl.textContent = checkedCount.toLocaleString();
-  
-  const pending = Math.max(0, totalAssets - checkedCount);
-  const pendingEl = document.getElementById("dash-pending");
-  if (pendingEl) pendingEl.textContent = pending.toLocaleString();
-  
-  if (totalAssets > 0) {
-    let checkedPct = Math.round((checkedCount / totalAssets) * 100);
-    if (checkedPct > 100) checkedPct = 100;
-    let pendingPct = Math.round((pending / totalAssets) * 100);
-    if (pendingPct < 0) pendingPct = 0;
-    
-    document.getElementById("dash-pct-checked").textContent = checkedPct + "%";
-    document.getElementById("dash-pct-pending").textContent = pendingPct + "%";
-    document.getElementById("dash-progress-bar").style.width = checkedPct + "%";
-  } else {
-    document.getElementById("dash-pct-checked").textContent = "0%";
-    document.getElementById("dash-pct-pending").textContent = "0%";
-    document.getElementById("dash-progress-bar").style.width = "0%";
-  }
-  document.getElementById("dash-month-label").textContent = currentMonthName;
-}
 let html5QrCode = null, isScanning = false, isProcessing = false;
 let cachedCameraId = null;
-let currentAssetNo = "", currentTab = "all", allAssets = [], exportHeaders = [];
+let currentAssetNo = "", allAssets = [], exportHeaders = [];
 let allUnregAssets = [], exportUnregHeaders = [];
 let currentPage = "home";
-let currentWarehouse = "all";
 
 // ==================== NAVIGATION ====================
 function showPage(page) {
-  if (page === "dashboard") {
-    localStorage.setItem("lastActivePage", "home");
-    page = "home";
-  }
-
   currentPage = page;
   localStorage.setItem("lastActivePage", page); // บันทึกหน้าล่าสุด
 
@@ -2037,80 +1708,15 @@ function showPage(page) {
   document.querySelectorAll(".page").forEach(p => p.classList.add("hidden"));
   document.getElementById("page-" + page).classList.remove("hidden");
   
-  const topBar = document.querySelector(".top-bar");
-  if (topBar) {
-    if (page === "dashboard") {
-      topBar.style.display = "block";
-    } else {
-      topBar.style.display = "none";
-    }
-  }
-
   document.querySelectorAll(".bottom-nav button").forEach(b => b.classList.remove("active"));
   const navBtn = document.getElementById("nav-" + page);
   if (navBtn) navBtn.classList.add("active");
-  if (page === "dashboard") loadDashboard();
   if (page === "label") updateLabelPreview();
   if (page === "handheld") {
     setTimeout(() => {
       const hhInput = document.getElementById("handheld-input");
       if (hhInput) hhInput.focus();
     }, 100);
-  }
-}
-
-// ==================== TABS & PILLARS ====================
-let currentPillar = 'count';
-
-function setPillar(pillar) {
-  currentPillar = pillar;
-  // Update Buttons
-  document.getElementById("pillar-count").classList.toggle("active", pillar === 'count');
-  document.getElementById("pillar-unreg").classList.toggle("active", pillar === 'unreg');
-
-  // Update Summary Rows
-  document.getElementById("summary-count").classList.toggle("hidden", pillar !== 'count');
-  document.getElementById("summary-unreg").classList.toggle("hidden", pillar !== 'unreg');
-
-  // Update Tabs and Tables
-  if (pillar === 'count') {
-    document.querySelector(".tab-bar").classList.remove("hidden");
-    document.getElementById("table-master-container").classList.remove("hidden");
-    document.getElementById("table-unreg-container").classList.add("hidden");
-    filterTable(); // Render main table based on currentTab
-  } else {
-    document.querySelector(".tab-bar").classList.add("hidden");
-    document.getElementById("table-master-container").classList.add("hidden");
-    document.getElementById("table-unreg-container").classList.remove("hidden");
-    renderUnregTable();
-  }
-}
-
-function setTab(tab, el) {
-  currentTab = tab;
-  document.querySelectorAll(".tab-btn").forEach(b => b.classList.remove("active"));
-  if (el) el.classList.add("active");
-  
-  if (tab === "unreg") {
-    // Fallback if needed, though button is removed
-    document.getElementById("table-master-container").classList.add("hidden");
-    document.getElementById("table-unreg-container").classList.remove("hidden");
-    renderUnregTable();
-  } else {
-    if (currentPillar === 'count') {
-      document.getElementById("table-master-container").classList.remove("hidden");
-      document.getElementById("table-unreg-container").classList.add("hidden");
-      renderTable(allAssets);
-    }
-  }
-}
-
-function setWarehouse(wh, el) {
-  currentWarehouse = wh;
-  document.querySelectorAll(".wh-btn").forEach(b => b.classList.remove("active"));
-  if (el) el.classList.add("active");
-  if (currentPillar === 'count') {
-    renderTable(allAssets);
   }
 }
 
@@ -2160,9 +1766,6 @@ function showStockCountModal(data) {
   if (isAlreadyCounted(data)) {
     statusText = "พบข้อมูลทรัพย์สิน (นับแล้วในรอบนี้)";
     badgeHtml = `<span style="display:inline-flex;align-items:center;gap:4px;padding:6px 14px;border-radius:999px;font-size:11px;font-weight:700;margin-top:10px;text-transform:uppercase;background:#dcfce7;color:var(--success);">✅ นับแล้ว (Count)</span>`;
-  } else if (currentPage === "dashboard" && currentPillar === "count" && isDamagedLabel) {
-    statusText = "พบสินค้าที่มีรูปเสียหายจริง";
-    badgeHtml = `<span class="blink-label-warning">⚠️ Label เสียหาย</span>`;
   }
 
   setResult(`
@@ -2579,8 +2182,7 @@ async function confirmScanCount() {
 
     // Update local data so UI reflects changes immediately
     if (pendingScanData.isUnregistered) {
-      // Force reload dashboard next time to fetch new master data
-      // For now, we can just let it reload or we add to allAssets
+      // Keep local cache updated after confirming an unregistered item.
       const newRow = [
         pendingScanData.assetNo,
         pendingScanData.assetName,
@@ -3145,7 +2747,7 @@ function printAssetLabel(assetNo) {
   updateLabelPreview();
 }
 
-// ==================== DASHBOARD & TABLE ====================
+// ==================== FORMAT & DETAIL MODALS ====================
 function formatDate(dateVal) {
   if (!dateVal) return "-";
   const d = new Date(dateVal);
@@ -3169,511 +2771,6 @@ function getStatusBadge(status) {
   if (s.includes("count"))       return '<span class="status-badge ok">นับแล้ว (Count)</span>';
   return `<span class="status-badge info">${escHtml(status || "-")}</span>`;
 }
-
-function renderTable(assets) {
-  const tbody = document.getElementById("table-body");
-  if (!assets || assets.length === 0) {
-    tbody.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">ไม่มีข้อมูล</div>';
-    return;
-  }
-
-  // Filter by tab (category)
-  let filtered = assets;
-  if (currentTab === "pending") {
-    const now = new Date();
-    const curMonth = now.getMonth();
-    const curYear = now.getFullYear();
-    filtered = assets.filter(row => {
-      if (!row[7]) return true;
-      const d = new Date(row[7]);
-      if (isNaN(d.getTime())) return true;
-      return d.getMonth() !== curMonth || d.getFullYear() !== curYear;
-    });
-  } else if (currentTab !== "all") {
-    const tabMap = { off: "OFF", com: "COM", tol: "TOL", vpot: "VPOT", veh: "VEH" };
-    const t = tabMap[currentTab] || "";
-    filtered = assets.filter(row => String(row[2]).toUpperCase().trim().includes(t));
-  }
-
-  // Filter by warehouse
-  if (currentWarehouse !== "all") {
-    const whMap = {
-      "WH-A": ["warehouse a", "a"],
-      "WH-B": ["warehouse b", "b"],
-      "WHD":  ["whd"],
-      "Office": ["office"],
-      "HR":   ["hr"]
-    };
-    const keywords = whMap[currentWarehouse] || [];
-    filtered = filtered.filter(row => {
-      const wh = String(row[4]).trim();
-      return keywords.some(kw => {
-        if (kw === "a" || kw === "b") return wh.toUpperCase() === kw.toUpperCase();
-        return wh.toLowerCase().includes(kw);
-      });
-    });
-  }
-
-  // Filter by search (ค้นหาทั้ง รหัส / ชื่อ / หมวดหมู่ / พื้นที่ / คลัง)
-  const searchInput = document.getElementById("search-input");
-  const search = searchInput ? searchInput.value.trim().toUpperCase() : "";
-  if (search) {
-    filtered = filtered.filter(row =>
-      [0, 1, 2, 3, 4].some(i => String(row[i]).toUpperCase().includes(search))
-    );
-  }
-
-  // Filter by date (scan date → acquisition date fallback)
-  const dateFromEl = document.getElementById("date-from");
-  const dateToEl   = document.getElementById("date-to");
-  const dateFrom = dateFromEl ? dateFromEl.value : null;
-  const dateTo   = dateToEl ? dateToEl.value : null;
-  if (dateFrom || dateTo) {
-    const from = dateFrom ? new Date(dateFrom + "T00:00:00") : null;
-    const to   = dateTo   ? new Date(dateTo   + "T23:59:59") : null;
-    filtered = filtered.filter(row => {
-      const raw = row[7] || row[5];
-      if (!raw) return true;
-      const d = new Date(raw);
-      if (isNaN(d.getTime())) return true;
-      if (from && d < from) return false;
-      if (to   && d > to)   return false;
-      return true;
-    });
-  }
-
-  const fragment = document.createDocumentFragment();
-  
-  filtered.forEach(row => {
-    const assetNo   = escHtml(row[0] || "-");
-    const assetName = escHtml(row[1] || "-");
-    const category  = escHtml(row[2] || "-");
-    const area      = escHtml(row[3] || "-");
-    const warehouse = escHtml(row[4] || "-");
-    const acqDate   = formatDate(row[5]);
-    const status    = row[6] || "Active";
-    const lastScan  = formatDateTime(row[7]);
-    
-    let rawResult = String(row[8] || "-").trim();
-    let displayResult = rawResult;
-    if (rawResult.includes("Confirmed from Unregistered") || rawResult.includes("Unregistered")) {
-      displayResult = "สินค้านอกระบบ";
-    } else if (rawResult === "Count" || rawResult === "Checked") {
-      displayResult = "ตรวจสอบแล้ว";
-    }
-    const lastResult = escHtml(displayResult);
-    
-    const rawRemarks = String(row[9] || "");
-    const rawStatus = String(row[6] || "");
-    const isStickerDamaged = [String(row[1]), String(row[2]), rawResult, rawRemarks, rawStatus].join(" ").includes("บาร์โค้ดเสียหาย") || String(row[2]).toUpperCase() === "UNKNOWN";
-    const stickerBadge = isStickerDamaged
-      ? '<span class="table-blink-badge">⚠️ บาร์โค้ดเสียหาย</span>'
-      : "";
-
-    const div = document.createElement("div");
-    div.className = "table-row";
-    div.innerHTML = `
-      <div class="cell cell-time">${lastScan}</div>
-      <div class="cell cell-code">${assetNo}</div>
-      <div class="cell"><span class="cat-tag">${category}</span></div>
-      <div class="cell">
-        <div class="cell-name">${assetName}</div>
-        ${stickerBadge}
-        <div class="cell-sub">${area}</div>
-      </div>
-      <div class="cell">${warehouse}</div>
-      <div class="cell">${acqDate}</div>
-      <div class="cell">${getStatusBadge(status)}</div>
-      <div class="cell" style="font-size:11px;color:var(--text-dim);">${lastResult}</div>
-      <div class="cell">
-        <button class="row-btn pdf" onclick="printAssetLabel(${JSON.stringify(assetNo)})"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"></polyline><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path><rect x="6" y="14" width="12" height="8"></rect></svg></button>
-      </div>
-      <div class="cell">
-        <button class="row-btn detail" onclick="viewAssetDetail(${JSON.stringify(assetNo)})">ดูข้อมูล</button>
-      </div>`;
-    fragment.appendChild(div);
-  });
-  
-  tbody.innerHTML = "";
-  tbody.appendChild(fragment);
-}
-
-function filterTable() { 
-  if (currentPillar !== 'count') {
-    renderUnregTable();
-  } else {
-    renderTable(allAssets); 
-  }
-}
-
-function renderUnregTable() {
-  const tbody = document.getElementById("table-unreg-body");
-  if (!allUnregAssets || allUnregAssets.length === 0) {
-    tbody.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">ไม่มีข้อมูล</div>';
-    return;
-  }
-
-  // Filter out Duplicate items for the UI table
-  let baseData = allUnregAssets.filter(row => {
-    const status = String(row[8] || "").trim().toUpperCase();
-    return status !== "DUPLICATE";
-  });
-
-  if (baseData.length === 0) {
-    tbody.innerHTML = '<div style="padding:40px;text-align:center;color:var(--text-muted);">ไม่มีข้อมูล</div>';
-    return;
-  }
-
-  // Filter by search (รหัส / ชื่อ / พื้นที่ / หมายเหตุ)
-  const searchInputUnreg = document.getElementById("search-input");
-  const search = searchInputUnreg ? searchInputUnreg.value.trim().toUpperCase() : "";
-  let filtered = baseData;
-  if (search) {
-    filtered = filtered.filter(row =>
-      [0, 1, 3, 5].some(i => String(row[i]).toUpperCase().includes(search))
-    );
-  }
-
-  // Filter by date (row 6 is Date Added)
-  const dateFromElUnreg = document.getElementById("date-from");
-  const dateToElUnreg   = document.getElementById("date-to");
-  const dateFrom = dateFromElUnreg ? dateFromElUnreg.value : null;
-  const dateTo   = dateToElUnreg ? dateToElUnreg.value : null;
-  if (dateFrom || dateTo) {
-    const from = dateFrom ? new Date(dateFrom + "T00:00:00") : null;
-    const to   = dateTo   ? new Date(dateTo   + "T23:59:59") : null;
-    filtered = filtered.filter(row => {
-      const raw = row[6];
-      if (!raw) return true;
-      const d = new Date(raw);
-      if (isNaN(d.getTime())) return true;
-      if (from && d < from) return false;
-      if (to   && d > to)   return false;
-      return true;
-    });
-  }
-
-  tbody.innerHTML = filtered.map(row => {
-    const tempId    = escHtml(row[0] || "-");
-    const assetName = escHtml(row[1] || "-");
-    const category  = escHtml(row[2] || "-");
-    const warehouse = escHtml(row[3] || "-");
-    const area      = escHtml(row[4] || "-");
-    const remarks   = escHtml(row[5] || "-");
-    const dateAdded = formatDateTime(row[6]);
-    const imageLink = row[7] || "";
-    const rawAssetName = String(row[1] || "");
-    const rawCategory = String(row[2] || "");
-    const rawRemarks = String(row[5] || "");
-    const rawStatus = String(row[9] || "");
-    const isStickerDamaged = [rawAssetName, rawCategory, rawRemarks, rawStatus].join(" ").includes("บาร์โค้ดเสียหาย") || rawCategory.toUpperCase() === "UNKNOWN";
-    const stickerBadge = isStickerDamaged
-      ? '<span class="table-blink-badge">⚠️ บาร์โค้ดเสียหาย</span>'
-      : "";
-    
-    // safe escape for alert
-    const safeName = escHtml(assetName).replace(/'/g, "\\'");
-    const safeArea = escHtml(area).replace(/'/g, "\\'");
-    const safeWarehouse = escHtml(warehouse).replace(/'/g, "\\'");
-    const safeRemarks = escHtml(remarks).replace(/'/g, "\\'");
-
-    const isConfirmed = String(row[8] || "").trim().toUpperCase() === "CONFIRMED";
-    
-    return `
-      <div class="table-row unreg">
-        <div class="cell cell-time">${dateAdded}</div>
-        <div class="cell cell-code">${tempId}</div>
-        <div class="cell"><span class="cat-tag" style="background:#fef3c7;color:#b45309;">${category}</span></div>
-        <div class="cell">
-          <div class="cell-name">${assetName}</div>
-          ${stickerBadge}
-          <div class="cell-sub">${area}</div>
-        </div>
-        <div class="cell">${warehouse}</div>
-        <div class="cell" style="color:var(--danger);font-size:11px;">${remarks}</div>
-        <div class="cell" style="display: flex; gap: 4px; justify-content: flex-end;">
-          <button class="row-btn detail" onclick="viewUnregAssetDetail('${tempId}')">ดูข้อมูล</button>
-          ${isConfirmed ? 
-            `<span class="status-badge ok" style="padding:4px 8px;font-size:11px;">✅ เพิ่มแล้ว</span>` : 
-            `<span class="status-badge warn" style="padding:4px 8px;font-size:11px;">รอดำเนินการ</span>`
-          }
-        </div>
-      </div>`;
-  }).join("");
-}
-
-function openConfirmUnregModal(tempId) {
-  const row = allUnregAssets.find(r => String(r[0]).trim() === tempId);
-  if (!row) return;
-  
-  document.getElementById("confirm-unreg-id").textContent = row[0] || "-";
-  document.getElementById("confirm-unreg-name").textContent = row[1] || "-";
-  document.getElementById("confirm-unreg-cat").textContent = row[2] || "-";
-  document.getElementById("confirm-unreg-wh").textContent = (row[3] || "-") + " / " + (row[4] || "-");
-  document.getElementById("confirm-unreg-remark").textContent = row[5] || "-";
-  
-  const footerDiv = document.getElementById("modal-confirm-unreg-footer");
-  const warnDiv = document.getElementById("confirm-unreg-duplicate-warning");
-  const textP = document.getElementById("confirm-unreg-text");
-  
-  // Check against frontend allAssets
-  const isDuplicate = allAssets && allAssets.some(m => String(m[0]).trim().toUpperCase() === tempId.toUpperCase());
-  
-  if (isDuplicate) {
-    footerDiv.innerHTML = `
-      <button class="btn btn-danger" style="flex:1;" onclick="deleteUnregAsset('${tempId}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path><line x1="10" y1="11" x2="10" y2="17"></line><line x1="14" y1="11" x2="14" y2="17"></line></svg>ลบข้อมูล</button>
-      <button class="btn btn-secondary" style="flex:1;" onclick="closeConfirmUnregModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>ยกเลิก</button>
-    `;
-    warnDiv.classList.remove("hidden");
-    if(textP) textP.classList.add("hidden");
-  } else {
-    footerDiv.innerHTML = `
-      <button class="btn btn-success" style="flex:1;" id="btn-confirm-unreg-submit" onclick="submitConfirmUnreg('${tempId}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>ยืนยันข้อมูล</button>
-      <button class="btn btn-secondary" style="flex:1;" onclick="closeConfirmUnregModal()"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>ยกเลิก</button>
-    `;
-    warnDiv.classList.add("hidden");
-    if(textP) textP.classList.remove("hidden");
-  }
-  
-  document.getElementById("modal-confirm-unreg").classList.remove("hidden");
-}
-
-async function deleteUnregAsset(tempId) {
-  if (!confirm(`คุณต้องการลบข้อมูล ${tempId} ใช่หรือไม่? (รูปภาพใน Drive จะถูกลบด้วย)`)) return;
-  
-  const user = prompt("Approve username");
-  if (!user) return;
-  const pass = prompt("Approve password");
-  if (!pass) return;
-
-  const footerDiv = document.getElementById('modal-confirm-unreg-footer');
-  footerDiv.innerHTML = `<span class="spinner-sm" style="margin-right:6px;"></span><span style="font-size:13px; color:var(--text-muted);">กำลังลบข้อมูล...</span>`;
-  
-  try {
-    const controller = new AbortController();
-    const timerId = setTimeout(() => controller.abort(), 15000);
-    const res = await fetch(apiUrl({ action: "deleteUnreg", tempId: tempId, user: user, pass: pass }), {
-      signal: controller.signal
-    }).catch(e => {
-      if (e.name === "AbortError") throw new Error("❌ หมดเวลา - ตรวจสอบเครือข่าย");
-      throw e;
-    });
-    clearTimeout(timerId);
-    const data = await res.json().catch(() => null);
-    if (data && data.status === "success") {
-      closeConfirmUnregModal();
-      allUnregAssets = allUnregAssets.filter(row => String(row[0]).trim() !== tempId);
-      renderUnregTable();
-      setTimeout(() => alert("✅ ลบข้อมูลเรียบร้อยแล้ว"), 50);
-    } else {
-      alert("❌ เกิดข้อผิดพลาด: " + (data ? data.message : "ไม่สำเร็จ"));
-      closeConfirmUnregModal();
-    }
-  } catch (err) {
-    alert("❌ ข้อผิดพลาด: " + err.message);
-    closeConfirmUnregModal();
-  }
-}
-
-function closeConfirmUnregModal() {
-  document.getElementById("modal-confirm-unreg").classList.add("hidden");
-}
-
-async function submitConfirmUnreg(tempId) {
-  if (window.isFromScannerChain) {
-    window.isFromScannerChain = false;
-    const cachedAsset = allUnregAssets.find(row => String(row[0]).trim() === tempId);
-    closeConfirmUnregModal();
-    if (cachedAsset) {
-      showSuccess({
-        assetNo: tempId,
-        assetName: cachedAsset[1],
-        category: cachedAsset[2],
-        warehouse: cachedAsset[3],
-        area: cachedAsset[4],
-        isUnregistered: true
-      });
-    }
-    return;
-  }
-
-  const btn = document.getElementById("btn-confirm-unreg-submit");
-  const originalText = btn.innerHTML;
-  const user = prompt("Approve username");
-  if (!user) return;
-  const pass = prompt("Approve password");
-  if (!pass) return;
-  btn.innerHTML = '<span class="spinner-sm" style="margin-right:6px;"></span>กำลังดำเนินการ...';
-  btn.disabled = true;
-
-  try {
-    const controller = new AbortController();
-    const timerId = setTimeout(() => controller.abort(), 15000);
-    const url = apiUrl({ action: "confirmUnreg", tempId: tempId, user: user, pass: pass });
-    const res = await fetch(url, { signal: controller.signal }).catch(e => {
-      if (e.name === "AbortError") throw new Error("❌ หมดเวลาการเชื่อมต่อ");
-      throw e;
-    });
-    clearTimeout(timerId);
-    const data = await res.json();
-    if (data.status === "success") {
-      closeConfirmUnregModal();
-      
-      const cachedAsset = allUnregAssets.find(row => String(row[0]).trim() === tempId);
-      // Mark as confirmed locally instead of removing
-      const idx = allUnregAssets.findIndex(row => String(row[0]).trim() === tempId);
-      if (idx > -1) {
-        allUnregAssets[idx][8] = "Confirmed";
-      }
-      renderUnregTable();
-      setTimeout(() => alert("✅ ยืนยันข้อมูลเข้าสู่ระบบเรียบร้อยแล้ว"), 100);
-    } else {
-      alert("❌ เกิดข้อผิดพลาด: " + data.message);
-    }
-  } catch (err) {
-    alert("❌ การเชื่อมต่อผิดพลาด: " + err.message);
-  } finally {
-    btn.innerHTML = originalText;
-    btn.disabled = false;
-  }
-}
-
-async function confirmAllUnreg() {
-  if (!allUnregAssets || allUnregAssets.length === 0) {
-    alert("ไม่มีรายการให้ยืนยัน");
-    return;
-  }
-  
-  const pendingUnreg = allUnregAssets.filter(row => {
-    const status = String(row[8] || "").trim().toUpperCase();
-    return status !== "CONFIRMED" && status !== "DUPLICATE";
-  });
-  
-  const masterIds = new Set(allAssets.map(a => String(a[0]).trim().toUpperCase()));
-  const nonDuplicates = pendingUnreg.filter(unreg => !masterIds.has(String(unreg[0]).trim().toUpperCase()));
-  
-  if (nonDuplicates.length === 0) {
-    alert("รายการทั้งหมดมีรหัสซ้ำอยู่ในระบบแล้ว ไม่สามารถยืนยันแบบ ALL ได้");
-    return;
-  }
-
-  if (!confirm(`พบรายการที่ไม่ซ้ำจำนวน ${nonDuplicates.length} รายการ (จากรอการยืนยัน ${pendingUnreg.length} รายการ)\n\nต้องการยืนยันเพิ่มเข้าระบบทั้งหมดใช่หรือไม่?`)) {
-    return;
-  }
-  
-  document.getElementById("approve-username").value = "";
-  document.getElementById("approve-password").value = "";
-  document.getElementById("modal-approve-login").classList.remove("hidden");
-  document.body.style.overflow = "hidden";
-}
-
-function closeApproveLoginModal() {
-  document.getElementById("modal-approve-login").classList.add("hidden");
-  document.body.style.overflow = "";
-}
-
-async function submitApproveAll() {
-  const user = document.getElementById("approve-username").value.trim();
-  const pass = document.getElementById("approve-password").value.trim();
-  
-  if (!user || !pass) {
-    alert("❌ กรุณากรอก Username และ Password");
-    return;
-  }
-  
-  const btn = document.getElementById("btn-approve-login");
-  const oldText = btn.innerHTML;
-  btn.innerHTML = '<span class="spinner-sm" style="margin-right:6px;"></span>ตรวจสอบ...';
-  btn.disabled = true;
-  
-  try {
-    const controller = new AbortController();
-    const timerId = setTimeout(() => controller.abort(), 18000);
-    const response = await fetch(apiUrl({ action: "confirmAllUnreg", user: user, pass: pass }), {
-      signal: controller.signal
-    }).catch(e => {
-      if (e.name === "AbortError") throw new Error("❌ หมดเวลา - ตรวจสอบเครือข่าย");
-      throw e;
-    });
-    clearTimeout(timerId);
-    const data = await response.json().catch(() => null);
-    if (data && data.status === "success") {
-      alert(`✅ ${data.message || "ยืนยันเรียบร้อย"}`);
-      closeApproveLoginModal();
-      loadDashboard(false);
-    } else {
-      alert("❌ " + (data ? data.message : "ไม่สำเร็จ"));
-    }
-  } catch(err) {
-    alert("❌ เกิดข้อผิดพลาด: " + err.message);
-  } finally {
-    if(btn) {
-      btn.innerHTML = oldText;
-      btn.disabled = false;
-    }
-  }
-}
-
-function clearDateFilter() {
-  document.getElementById("date-from").value = "";
-  document.getElementById("date-to").value   = "";
-  filterTable();
-}
-
-async function loadDashboard(isSilent = false, forceClearCache = false) {
-  if (isDashboardLoading) return;
-  isDashboardLoading = true;
-  // Spinning refresh button
-  const btn = document.getElementById("refresh-btn");
-  if (btn) btn.classList.add("spinning");
-
-  if (!isSilent) {
-    document.getElementById("table-body").innerHTML = `
-      <div style="padding:32px;text-align:center;color:var(--text-muted);">
-        <div class="spinner" style="margin:0 auto 12px;"></div>
-        <div style="font-size:13px;">กำลังโหลดข้อมูล...</div>
-      </div>`;
-  }
-
-  try {
-    const controller = new AbortController();
-    const timerId = setTimeout(() => controller.abort(), 20000);
-    const queryAppend = forceClearCache ? "&nocache=1" : "";
-    const resp2 = await fetch(apiUrl({ action: "export" }) + queryAppend, {
-      signal: controller.signal
-    }).catch(e => {
-      if (e.name === "AbortError") throw new Error("❌ หมดเวลาในการโหลด");
-      return null;
-    });
-    clearTimeout(timerId);
-
-    if (resp2) {
-      const data2 = await resp2.json().catch(() => null);
-      if (data2 && data2.status === "ok" && Array.isArray(data2.assets)) {
-        applyExportData(data2);
-      } else {
-        throw new Error("ข้อมูลตอบกลับไม่ถูกต้อง");
-      }
-    }
-  } catch(err) {
-    console.error(err);
-    document.getElementById("table-body").innerHTML =
-      `<div style="padding:32px;text-align:center;color:var(--danger);">❌ โหลดข้อมูลไม่สำเร็จ — ${err.message || "กรุณารีเฟรช"}</div>`;
-  } finally {
-    isDashboardLoading = false;
-    if (btn) btn.classList.remove("spinning");
-  }
-}
-
-// Auto-refresh dashboard only while the tab is visible, and at a calmer interval.
-setInterval(() => {
-  if (currentPage === "dashboard" && !document.hidden) {
-    loadDashboard(true);
-  }
-}, 180000);
-
-// ==================== MODAL ====================
-let currentModalAssetNo = "";
 
 function getDirectDriveImageHtml(link) {
   if (!link) return "";
@@ -3813,191 +2910,6 @@ function printModalLabel() {
   printAssetLabel(currentModalAssetNo);
 }
 
-// ==================== EXPORT EXCEL ====================
-function exportExcel() {
-  if (!allAssets || allAssets.length === 0) {
-    alert("กรุณาโหลดข้อมูลก่อน");
-    return;
-  }
-
-  const exportData = [];
-
-  // แถว Metadata
-  exportData.push(["รายงานทรัพย์สิน - VESPA THAILAND CO., LTD."]);
-  exportData.push(["วันที่ส่งออก:", new Date().toLocaleDateString("th-TH")]);
-  exportData.push([]); // แถวว่าง
-
-  // ใช้ Headers จริงจาก GAS (รวมคอลัมน์รายเดือน)
-  const hasApiHeaders = exportHeaders && exportHeaders.length > 0;
-  const FIXED_HEADERS = ["รหัสทรัพย์สิน","ชื่อทรัพย์สิน","หมวดหมู่","พื้นที่","คลัง","วันที่ได้มา","สถานะ","เช็คล่าสุด","ผลการเช็ค"];
-  const headers = hasApiHeaders ? exportHeaders : FIXED_HEADERS;
-  exportData.push(headers);
-
-  allAssets.forEach(row => {
-    if (hasApiHeaders) {
-      // ส่งออกทุกคอลัมน์ (รวมรายเดือน)
-      const newRow = row.map((cell, i) => {
-        if (i === 5 || i === 7) return cell ? formatDate(cell) : "";
-        if (i >= 8 && typeof cell === 'string') {
-           if (cell.includes("Confirmed from Unregistered") || cell.includes("Unregistered")) return "สินค้านอกระบบ";
-           if (cell === "Count" || cell === "Checked") return "ตรวจสอบแล้ว";
-        }
-        return cell !== undefined && cell !== null ? cell : "";
-      });
-      exportData.push(newRow);
-    } else {
-      let rawResult = String(row[8] || "").trim();
-      let displayResult = rawResult;
-      if (rawResult.includes("Confirmed from Unregistered") || rawResult.includes("Unregistered")) displayResult = "สินค้านอกระบบ";
-      else if (rawResult === "Count" || rawResult === "Checked") displayResult = "ตรวจสอบแล้ว";
-
-      exportData.push([
-        row[0] || "", row[1] || "", row[2] || "", row[3] || "", row[4] || "",
-        row[5] ? formatDate(row[5]) : "", row[6] || "Active",
-        row[7] ? formatDateTime(row[7]) : "", displayResult
-      ]);
-    }
-  });
-
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.aoa_to_sheet(exportData);
-
-  ws["!cols"] = [
-    { wch: 15 }, { wch: 45 }, { wch: 12 }, { wch: 10 }, { wch: 10 },
-    { wch: 15 }, { wch: 15 }, { wch: 22 }, { wch: 15 }
-  ];
-  if (hasApiHeaders && headers.length > 9) {
-    for(let c = 9; c < headers.length; c++) ws["!cols"].push({wch: 15});
-  }
-
-  // --- Apply Styles to Master Sheet ---
-  const range = XLSX.utils.decode_range(ws['!ref']);
-  for (let R = range.s.r; R <= range.e.r; ++R) {
-    for (let C = range.s.c; C <= range.e.c; ++C) {
-      const cellRef = XLSX.utils.encode_cell({c:C, r:R});
-      if (!ws[cellRef]) ws[cellRef] = { t: "s", v: "" };
-      
-      ws[cellRef].s = {
-        font: { name: "Tahoma", sz: 10 },
-        alignment: { vertical: "center", wrapText: true }
-      };
-
-      if (R >= 3) {
-        ws[cellRef].s.border = {
-          top: {style: "thin", color: {auto: 1}},
-          bottom: {style: "thin", color: {auto: 1}},
-          left: {style: "thin", color: {auto: 1}},
-          right: {style: "thin", color: {auto: 1}}
-        };
-      }
-
-      if (R === 3) { // Header row
-        ws[cellRef].s.fill = { fgColor: { rgb: "E2E8F0" } };
-        ws[cellRef].s.font.bold = true;
-        ws[cellRef].s.alignment.horizontal = "center";
-      } else if (R === 0) { // Title row
-        ws[cellRef].s.font.sz = 14;
-        ws[cellRef].s.font.bold = true;
-        ws[cellRef].s.alignment = { horizontal: "center", vertical: "center" };
-        ws[cellRef].s.border = {
-          top: {style: "medium", color: {rgb: "166534"}},
-          bottom: {style: "medium", color: {rgb: "166534"}},
-          left: {style: "medium", color: {rgb: "166534"}},
-          right: {style: "medium", color: {rgb: "166534"}}
-        };
-      }
-    }
-  }
-
-  ws["!merges"] = [
-    { s: { r: 0, c: 0 }, e: { r: 0, c: range.e.c } }
-  ];
-
-  XLSX.utils.book_append_sheet(wb, ws, "Assets_Master");
-
-  // --- NEW Asset Sheet ---
-  const unregExportData = [];
-  unregExportData.push(["รายงานทรัพย์สินใหม่ (ที่ยังไม่ได้ลงทะเบียน) - VESPA THAILAND CO., LTD."]);
-  unregExportData.push(["วันที่ส่งออก:", new Date().toLocaleDateString("th-TH")]);
-
-  unregExportData.push([]);
-
-  const FIXED_UNREG_HEADERS = ["Temp ID", "Asset Name", "Category", "Warehouse", "Area", "Remarks", "Date Added", "Image Link", "Status", "Active/Inactive"];
-  const uHeaders = (exportUnregHeaders && exportUnregHeaders.length >= 10) ? exportUnregHeaders : FIXED_UNREG_HEADERS;
-
-  unregExportData.push(uHeaders);
-
-  if (allUnregAssets && allUnregAssets.length > 0) {
-    allUnregAssets.forEach(row => {
-      const newRow = row.map((cell, i) => {
-        if (i === 6) return cell ? formatDateTime(cell) : ""; // Date Added
-        return cell !== undefined && cell !== null ? cell : "";
-      });
-      unregExportData.push(newRow);
-    });
-  }
-
-  const wsUnreg = XLSX.utils.aoa_to_sheet(unregExportData);
-  wsUnreg["!cols"] = [
-    { wch: 15 }, { wch: 40 }, { wch: 12 }, { wch: 15 }, { wch: 15 },
-    { wch: 30 }, { wch: 22 }, { wch: 60 }
-  ];
-  if (uHeaders.length > 8) {
-    for(let c = 8; c < uHeaders.length; c++) wsUnreg["!cols"].push({wch: 15});
-  }
-
-  // --- Apply Styles to Unreg Sheet ---
-  if (wsUnreg['!ref']) {
-    const rangeUnreg = XLSX.utils.decode_range(wsUnreg['!ref']);
-    for (let R = rangeUnreg.s.r; R <= rangeUnreg.e.r; ++R) {
-      for (let C = rangeUnreg.s.c; C <= rangeUnreg.e.c; ++C) {
-        const cellRef = XLSX.utils.encode_cell({c:C, r:R});
-        if (!wsUnreg[cellRef]) wsUnreg[cellRef] = { t: "s", v: "" };
-        
-        wsUnreg[cellRef].s = {
-          font: { name: "Tahoma", sz: 10 },
-          alignment: { vertical: "center", wrapText: true }
-        };
-
-        if (R >= 3) {
-          wsUnreg[cellRef].s.border = {
-            top: {style: "thin", color: {auto: 1}},
-            bottom: {style: "thin", color: {auto: 1}},
-            left: {style: "thin", color: {auto: 1}},
-            right: {style: "thin", color: {auto: 1}}
-          };
-        }
-
-        if (R === 3) {
-          wsUnreg[cellRef].s.fill = { fgColor: { rgb: "FEF3C7" } };
-          wsUnreg[cellRef].s.font.bold = true;
-          wsUnreg[cellRef].s.alignment.horizontal = "center";
-        } else if (R === 0) {
-          wsUnreg[cellRef].s.font.sz = 14;
-          wsUnreg[cellRef].s.font.bold = true;
-          wsUnreg[cellRef].s.alignment = { horizontal: "center", vertical: "center" };
-          wsUnreg[cellRef].s.border = {
-            top: {style: "medium", color: {rgb: "166534"}},
-            bottom: {style: "medium", color: {rgb: "166534"}},
-            left: {style: "medium", color: {rgb: "166534"}},
-            right: {style: "medium", color: {rgb: "166534"}}
-          };
-        }
-      }
-    }
-
-    wsUnreg["!merges"] = [
-      { s: { r: 0, c: 0 }, e: { r: 0, c: rangeUnreg.e.c } }
-    ];
-  }
-
-  XLSX.utils.book_append_sheet(wb, wsUnreg, "Unregistered_Assets");
-  // --- End NEW Asset Sheet ---
-
-  XLSX.writeFile(wb, `VESPA_Asset_Report_${new Date().toISOString().split("T")[0]}.xlsx`);
-}
-
-// ==================== MANUAL ADD (UPLOAD IMAGE) ====================
 let manualImageBase64 = null;
 let manualImageCompressToken = 0;
 let manualAddMode = "choice";
@@ -4007,71 +2919,54 @@ function ensureManualNameEditable() {
   if (!nameInput) return null;
   nameInput.disabled = false;
   nameInput.readOnly = false;
-  nameInput.removeAttribute("disabled");
-  nameInput.removeAttribute("readonly");
   return nameInput;
 }
 
 function setManualAddMode(mode) {
-  manualAddMode = mode === "unregistered" ? "unregistered" : (mode === "unknown-damaged" ? "unknown-damaged" : (mode === "damaged" ? "damaged" : (mode === "lookup" ? "lookup" : "choice")));
+  manualAddMode = ["lookup", "unknown-damaged", "damaged", "unregistered"].includes(mode) ? mode : "choice";
   const isChoice = manualAddMode === "choice";
   const isLookup = manualAddMode === "lookup";
   const isUnknownDamaged = manualAddMode === "unknown-damaged";
   const isDamaged = manualAddMode === "damaged";
+  const isUnregistered = manualAddMode === "unregistered";
+
+  const choiceActions = document.getElementById("manual-choice-actions");
   const damagedBtn = document.getElementById("manual-mode-damaged");
   const unregBtn = document.getElementById("manual-mode-unregistered");
   const modeTabs = document.querySelector("#modal-manual-add .manual-mode-tabs");
   const assetField = document.getElementById("manual-asset-no-field");
-  const assetInput = document.getElementById("manual-asset-no");
   const assetLabel = document.getElementById("manual-asset-no-label");
   const nameField = document.getElementById("manual-name-field");
-  const nameInput = document.getElementById("manual-name");
+  const nameInput = ensureManualNameEditable();
   const categoryField = document.getElementById("manual-category-field");
-  const categoryInput = document.getElementById("manual-category");
-  const locationFields = document.getElementById("manual-location-fields");
+  const locGroupField = document.getElementById("manual-loc-group-field");
+  const areaField = document.getElementById("manual-area-field");
   const statusField = document.getElementById("manual-status-field");
-  const statusInput = document.getElementById("manual-status");
   const uploadField = document.getElementById("manual-upload-field");
-  const choiceActions = document.getElementById("manual-choice-actions");
   const note = document.getElementById("manual-mode-note");
   const subtitle = document.getElementById("manual-modal-subtitle");
   const submitBtn = document.getElementById("btn-manual-submit");
   const cancelBtn = submitBtn ? submitBtn.nextElementSibling : null;
-  ensureManualNameEditable();
 
   if (modeTabs) modeTabs.classList.add("hidden");
   if (choiceActions) choiceActions.classList.toggle("hidden", !isChoice);
   if (damagedBtn) damagedBtn.classList.toggle("active", isDamaged);
-  if (unregBtn) unregBtn.classList.toggle("active", manualAddMode === "unregistered");
+  if (unregBtn) unregBtn.classList.toggle("active", isUnregistered);
   if (assetField) assetField.classList.toggle("hidden", isUnknownDamaged || isChoice);
-  if (assetLabel) {
-    assetLabel.innerHTML = (isDamaged || isLookup)
-      ? 'รหัสทรัพย์สิน <span class="req">*</span>'
-      : 'รหัสทรัพย์สิน';
-  }
-  if (assetInput) {
-    assetInput.disabled = false;
-    assetInput.readOnly = false;
-    assetInput.removeAttribute("disabled");
-    assetInput.removeAttribute("readonly");
-    if (isUnknownDamaged) assetInput.value = "";
-    assetInput.placeholder = (isDamaged || isLookup) ? "เช่น OFF00123" : "ใส่ก็ได้ หรือเว้นว่างให้ระบบสร้าง TEMP";
-  }
-  if (nameField) nameField.classList.toggle("hidden", !isDamaged);
-  if (nameInput) {
-    nameInput.disabled = !isDamaged;
-    nameInput.readOnly = !isDamaged;
-    if (!isDamaged) nameInput.value = "";
-  }
-  if (categoryField) categoryField.classList.toggle("hidden", isDamaged || isLookup || isUnknownDamaged || isChoice);
-  if (categoryInput) {
-    categoryInput.disabled = isDamaged || isLookup || isUnknownDamaged;
-    if (isDamaged || isLookup || isUnknownDamaged) categoryInput.value = "";
-  }
-  if (locationFields) locationFields.classList.toggle("hidden", isLookup || isChoice);
-  if (statusField) statusField.classList.toggle("hidden", isLookup || isChoice);
-  if (statusInput && isUnknownDamaged) statusInput.value = "ใช้งานอยู่";
-  if (uploadField) uploadField.classList.toggle("hidden", isLookup || isChoice);
+  if (assetLabel) assetLabel.innerHTML = (isDamaged || isLookup) ? 'รหัสทรัพย์สิน <span class="req">*</span>' : 'รหัสทรัพย์สิน';
+  if (nameField) nameField.classList.toggle("hidden", isChoice || isLookup || isUnregistered);
+  if (categoryField) categoryField.classList.toggle("hidden", isChoice || isLookup);
+  if (locGroupField) locGroupField.classList.toggle("hidden", isChoice || isLookup);
+  if (areaField) areaField.classList.toggle("hidden", isChoice || isLookup);
+  if (statusField) statusField.classList.toggle("hidden", isChoice || isLookup || isUnknownDamaged);
+  if (uploadField) uploadField.classList.toggle("hidden", isChoice || isLookup);
+  if (categoryField) categoryField.style.display = (isChoice || isLookup || isUnknownDamaged) ? "none" : "";
+  if (locGroupField) locGroupField.style.display = (isChoice || isLookup) ? "none" : "";
+  if (areaField) areaField.style.display = (isChoice || isLookup) ? "none" : "";
+  if (statusField) statusField.style.display = (isChoice || isLookup || isUnknownDamaged) ? "none" : "";
+  if (uploadField) uploadField.style.display = (isChoice || isLookup) ? "none" : "block";
+  if (nameInput && isUnknownDamaged) nameInput.value = "บาร์โค้ดเสียหาย ไม่ทราบรหัส";
+
   if (note) {
     note.textContent = isChoice
       ? "เลือกประเภทปัญหาบาร์โค้ดก่อน เพื่อเปิดชุดข้อมูลที่ต้องกรอกให้ถูกต้อง"
@@ -4083,37 +2978,26 @@ function setManualAddMode(mode) {
       ? "ใช้เมื่อทรัพย์สินมีอยู่ในระบบ แต่บาร์โค้ด/ป้ายเสียหาย ให้กรอกรหัสเพื่อค้นหาและบันทึกการตรวจนับ"
       : "ใช้เมื่อเป็นสินค้านอกระบบจริง จะใส่รหัสทรัพย์สินหรือเว้นว่างก็ได้ หากเว้นว่างระบบจะสร้างรหัสชั่วคราว TEMP ให้อัตโนมัติ";
   }
-  if (subtitle) {
-    subtitle.textContent = isChoice
-      ? "เลือกประเภทปัญหา"
-      : isLookup
-      ? "ค้นจากฐานข้อมูลระบบก่อน"
-      : isUnknownDamaged
-      ? "เลือกตำแหน่งและถ่ายรูป"
-      : isDamaged
-      ? "ค้นหาจากรหัสเดิมและบันทึกการตรวจนับ"
-      : "ถ่ายรูปและบันทึกเป็นรายการรออนุมัติ";
-  }
-  if (submitBtn && !submitBtn.disabled) {
+  if (subtitle) subtitle.textContent = isChoice ? "เลือกประเภทปัญหา" : isLookup ? "ค้นหาจากรหัสเดิมและบันทึกการตรวจนับ" : "ถ่ายรูปและบันทึกเป็นรายการรอตรวจสอบ";
+  if (submitBtn) {
     submitBtn.classList.toggle("hidden", isChoice);
-    if (cancelBtn) cancelBtn.classList.toggle("btn-full", isChoice);
+    submitBtn.style.display = isChoice ? "none" : "inline-flex";
+    submitBtn.disabled = false;
     submitBtn.innerHTML = isLookup
       ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg> ค้นหาสินค้าในระบบ'
-      : isUnknownDamaged
-      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> บันทึกรอตรวจสอบ'
-      : isDamaged
-      ? '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> บันทึกบาร์โค้ดเสียหาย'
-      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> บันทึกสินค้านอกระบบ';
+      : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg> บันทึกและอัปโหลด';
+  }
+  if (cancelBtn) {
+    cancelBtn.classList.toggle("btn-full", isChoice);
+    cancelBtn.style.width = isChoice ? "100%" : "";
   }
 }
 
 function openManualAddModal(prefillAssetNo = "", mode = "choice") {
   document.getElementById("modal-manual-add").classList.remove("hidden");
   document.body.style.overflow = "hidden";
-  const cleanPrefill = (typeof prefillAssetNo === 'string' ? prefillAssetNo.trim() : "");
+  document.getElementById("manual-asset-no").value = typeof prefillAssetNo === "string" ? prefillAssetNo.trim() : "";
   setManualAddMode(mode);
-  document.getElementById("manual-asset-no").value = cleanPrefill;
-  
   setTimeout(() => {
     const focusEl = mode === "choice" ? document.querySelector("#manual-choice-actions button") : document.getElementById("manual-asset-no");
     if (focusEl) focusEl.focus();
@@ -4123,7 +3007,6 @@ function openManualAddModal(prefillAssetNo = "", mode = "choice") {
 function closeManualAddModal() {
   document.getElementById("modal-manual-add").classList.add("hidden");
   document.body.style.overflow = "";
-  // Reset form
   document.getElementById("manual-asset-no").value = "";
   const nameInput = ensureManualNameEditable();
   if (nameInput) nameInput.value = "";
@@ -4137,16 +3020,14 @@ function closeManualAddModal() {
   document.getElementById("manual-preview-container").classList.add("hidden");
   document.getElementById("manual-upload-placeholder").classList.remove("hidden");
   const btn = document.getElementById("btn-manual-submit");
-  btn.disabled = false;
+  if (btn) btn.disabled = false;
   setManualAddMode("choice");
 }
 
 function previewManualImage(event) {
   const file = event.target.files[0];
   if (!file) return;
-  
   const token = ++manualImageCompressToken;
-  manualImageBase64 = null;
   const btn = document.getElementById("btn-manual-submit");
   if (btn) {
     btn.disabled = true;
@@ -4158,9 +3039,8 @@ function previewManualImage(event) {
   preview.src = previewUrl;
   document.getElementById("manual-upload-placeholder").classList.add("hidden");
   document.getElementById("manual-preview-container").classList.remove("hidden");
-  
   compressImageToBase64(file)
-    .then((base64) => {
+    .then(base64 => {
       if (token !== manualImageCompressToken) return;
       manualImageBase64 = base64;
       if (btn) {
@@ -4183,16 +3063,15 @@ async function submitManualAdd() {
   const isLookupMode = manualAddMode === "lookup";
   const isUnknownDamagedMode = manualAddMode === "unknown-damaged";
   const isDamagedMode = manualAddMode === "damaged";
-  if (isDamagedMode) ensureManualNameEditable();
-  const assetNo   = String(document.getElementById("manual-asset-no").value || "").trim().toUpperCase();
+  const assetNo = String(document.getElementById("manual-asset-no").value || "").trim().toUpperCase();
   const assetNameInput = String(document.getElementById("manual-name").value || "").trim();
   const assetName = isDamagedMode ? assetNameInput : (isUnknownDamagedMode ? "บาร์โค้ดเสียหาย ไม่ทราบรหัส" : "สินค้านอกระบบ");
-  const category  = isUnknownDamagedMode ? "UNKNOWN" : document.getElementById("manual-category").value;
-  const group     = document.getElementById("manual-loc-group").value;
-  const zone      = document.getElementById("manual-area").value;
-  const status    = document.getElementById("manual-status").value;
-  const remarks   = isUnknownDamagedMode ? "บาร์โค้ดเสียหาย ไม่ทราบรหัส - รอตรวจสอบจับคู่ทรัพย์สินเดิม" : "";
-  let masterAsset = null;
+  const category = isUnknownDamagedMode ? "UNKNOWN" : document.getElementById("manual-category").value;
+  const group = document.getElementById("manual-loc-group").value;
+  const zone = document.getElementById("manual-area").value;
+  const status = document.getElementById("manual-status").value;
+  const remarks = isUnknownDamagedMode ? "บาร์โค้ดเสียหาย ไม่ทราบรหัส - รอตรวจสอบจับคู่ทรัพย์สินเดิม" : "";
+  const btn = document.getElementById("btn-manual-submit");
 
   if (isLookupMode) {
     if (!assetNo) {
@@ -4200,29 +3079,23 @@ async function submitManualAdd() {
       document.getElementById("manual-asset-no").focus();
       return;
     }
-
-    const btn = document.getElementById("btn-manual-submit");
     btn.disabled = true;
     btn.innerHTML = '<span class="spinner-sm" style="margin-right:6px;"></span>กำลังค้นหา...';
-
     try {
       const lookupData = await fetchAssetLookupWithTimeout(assetNo, 6000);
       btn.disabled = false;
       setManualAddMode("lookup");
-
       if (lookupData && lookupData.status === "success" && lookupData.found && !lookupData.isUnregistered) {
         closeManualAddModal();
         lookupData.isBarcodeDamagedFlow = true;
         showStockCountModal(lookupData);
         return;
       }
-
       if (lookupData && lookupData.status === "success" && lookupData.found && lookupData.isUnregistered) {
         closeManualAddModal();
         showUnregExistsModal(lookupData);
         return;
       }
-
       setManualAddMode("unregistered");
       document.getElementById("manual-asset-no").value = assetNo;
       document.getElementById("manual-category").focus();
@@ -4240,36 +3113,29 @@ async function submitManualAdd() {
     document.getElementById("manual-asset-no").focus();
     return;
   }
-  
-  if (isDamagedMode && (!assetNameInput || assetNameInput.length === 0)) {
-    alert("❌ กรุณากรอกชื่อทรัพย์สิน / โมเดล");
+  if (isDamagedMode && !assetNameInput) {
+    alert("❌ กรุณากรอกชื่อหรือโมเดลสินค้า");
     document.getElementById("manual-name").focus();
     return;
   }
-
   if (!isDamagedMode && !isUnknownDamagedMode && !category) {
-    alert("กรุณาเลือกหมวดหมู่ทรัพย์สิน");
+    alert("❌ กรุณาเลือกหมวดหมู่");
     return;
   }
-  if (!group) {
-    alert("กรุณาเลือกคลัง / โซนหลัก");
-    return;
-  }
-  if (!zone) {
-    alert("กรุณาเลือกพื้นที่ย่อย");
+  if (!group || !zone) {
+    alert("❌ กรุณาเลือกคลังและโซน");
     return;
   }
   if (!manualImageBase64) {
-    alert("กรุณารอสักครู่ ระบบกำลังเตรียมรูปภาพ หรือถ่ายรูปใหม่อีกครั้ง");
+    alert("❌ กรุณาถ่าย/อัปโหลดรูปภาพก่อนบันทึก");
     return;
   }
 
+  let masterAsset = null;
   if (isDamagedMode) {
     try {
       const lookupData = await fetchAssetLookupWithTimeout(assetNo, 6000);
-      if (lookupData && lookupData.status === "success" && lookupData.found) {
-        masterAsset = lookupData;
-      }
+      if (lookupData && lookupData.status === "success" && lookupData.found) masterAsset = lookupData;
     } catch (e) {}
     if (!masterAsset || masterAsset.isUnregistered) {
       if (masterAsset && masterAsset.isUnregistered) {
@@ -4283,114 +3149,90 @@ async function submitManualAdd() {
     }
   }
 
-  const btn = document.getElementById("btn-manual-submit");
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner-sm" style="margin-right:6px;"></span>กำลังบันทึก...';
 
-  try {
-    await yieldToUI();
-    const payload = isDamagedMode
-      ? {
-          key: API_SECRET,
-          action: "updateAsset",
-          assetNo: assetNo,
-          assetName: masterAsset.assetName || assetName,
-          warehouse: group,
-          area: zone,
-          status: status,
-          image: manualImageBase64,
-          isScan: true,
-          isUnregistered: false,
-          remarks: "บาร์โค้ดเสียหาย แต่ยังเห็นรหัส"
-        }
-      : {
-          key: API_SECRET,
-          action: "upload",
-          image: manualImageBase64,
-          assetNo: assetNo,
-          assetName: assetName,
-          category: category,
-          warehouse: group, // ส่งโซนหลักไปที่คอลัมน์ Warehouse
-          area: zone,       // ส่งพื้นที่ย่อยไปที่คอลัมน์ Area
-          status: status,
-          remarks: remarks
-        };
+  const payload = isDamagedMode
+    ? {
+        key: API_SECRET,
+        action: "uploadScanImage",
+        assetNo,
+        assetName: masterAsset.assetName || assetName,
+        warehouse: masterAsset.warehouse || group,
+        area: masterAsset.area || zone,
+        status,
+        countRound: getSelectedCountRound(),
+        image: manualImageBase64,
+        isScan: true,
+        isUnregistered: false,
+        remarks: "บาร์โค้ดเสียหาย แต่ยังเห็นรหัส"
+      }
+    : {
+        key: API_SECRET,
+        action: "upload",
+        image: manualImageBase64,
+        assetNo,
+        assetName,
+        category,
+        warehouse: group,
+        area: zone,
+        status,
+        remarks
+      };
 
-    // ใช้ API_URL (อันเดียวกับ code.gs ตัวเต็มของคุณ)
-    const controller = new AbortController();
-    const timerId = setTimeout(() => controller.abort(), 25000);
+  try {
     const response = await fetch(API_URL, {
       method: "POST",
       body: JSON.stringify(payload),
-      signal: controller.signal
-    }).catch(e => {
-      if (e.name === "AbortError") throw new Error("❌ หมดเวลาเชื่อมต่อ โปรดลองอีกครั้ง");
-      throw e;
+      headers: { "Content-Type": "text/plain;charset=utf-8" }
     });
-    clearTimeout(timerId);
-    
     const data = await response.json().catch(() => null);
-    
     if (isDamagedMode && data && data.status === "success") {
-      const assetInfo = { ...(masterAsset || {}), ...(data || {}) };
       closeManualAddModal();
       showSuccess({
-        assetNo: assetInfo.assetNo || assetNo,
-        assetName: assetInfo.assetName || assetName,
-        category: assetInfo.category || category,
-        area: assetInfo.area || zone,
-        warehouse: assetInfo.warehouse || group,
-        acquisitionDate: assetInfo.acquisitionDate || "",
-        assetStatus: assetInfo.assetStatus || status,
-        lastScan: assetInfo.lastScan || "",
-        lastResult: assetInfo.lastResult || "",
+        assetNo,
+        assetName: masterAsset.assetName || assetName,
+        category: masterAsset.category || "",
+        warehouse: masterAsset.warehouse || group,
+        area: masterAsset.area || zone,
+        lastScan: data.timestamp || "",
+        lastResult: "Count",
         isUnregistered: false
       });
-    } else if (!isDamagedMode && data && data.status === "exists" && data.isUnregistered === false) {
+      return;
+    }
+    if (!isDamagedMode && data && data.status === "exists" && data.isUnregistered === false) {
       closeManualAddModal();
       alert("Asset already exists in master list: " + (data.assetNo || assetNo));
       showSuccess({
         assetNo: data.assetNo || assetNo,
         assetName: data.assetName || assetName,
         category: data.category || category,
-        area: data.area || zone,
         warehouse: data.warehouse || group,
-        acquisitionDate: data.acquisitionDate || "",
-        assetStatus: data.assetStatus || status,
-        lastScan: data.lastScan || "",
-        lastResult: data.lastResult || "",
-        hasCount1: data.hasCount1,
-        hasCount2: data.hasCount2,
+        area: data.area || zone,
         isUnregistered: false
       });
-    } else if (!isDamagedMode && data && (data.status === "success" || data.status === "exists")) {
-      const assetInfo = data || {};
+      return;
+    }
+    if (!isDamagedMode && data && (data.status === "success" || data.status === "exists")) {
       closeManualAddModal();
       showUnregExistsModal({
-        assetNo: assetInfo.tempId || assetInfo.assetNo || "TEMP",
-        assetName: assetInfo.assetName || assetName,
-        category: assetInfo.category || category,
-        area: assetInfo.area || zone,
-        warehouse: assetInfo.warehouse || group,
-        remark: assetInfo.remark || remarks
+        assetNo: data.assetNo || assetNo || "TEMP",
+        assetName: data.assetName || assetName,
+        category: data.category || category,
+        warehouse: data.warehouse || group,
+        area: data.area || zone,
+        remark: data.remark || remarks,
+        imageUrl: data.imageUrl || "",
+        isUnregistered: true
       });
-      
-      if (data.status === "success" && (assetInfo.tempId || data.tempId)) {
-        const newUnregRow = [
-          assetInfo.tempId || data.tempId, assetName, category, group, zone, remarks, new Date().toISOString(), assetInfo.fileUrl || data.fileUrl || "", "Pending", status
-        ];
-        if (typeof allUnregAssets !== 'undefined') {
-          allUnregAssets.unshift(newUnregRow);
-        }
-      }
-    } else {
-      alert("❌ บันทึกไม่สำเร็จ: " + (data ? data.message : "ไม่มีข้อความตอบกลับ"));
-      btn.disabled = false;
-      setManualAddMode(manualAddMode);
       return;
-    }  } catch (error) {
+    }
+    alert("❌ บันทึกไม่สำเร็จ: " + (data ? data.message : "ไม่มีข้อความตอบกลับ"));
+    btn.disabled = false;
+    setManualAddMode(manualAddMode);
+  } catch (error) {
     alert("❌ เกิดข้อผิดพลาดในการเชื่อมต่อ: " + error.toString());
-    console.error(error);
     btn.disabled = false;
     setManualAddMode(manualAddMode);
   }
@@ -4435,12 +3277,8 @@ if (requestedPage === "home") {
   localStorage.setItem("lastActivePage", "home");
 }
 const storedLastPage = localStorage.getItem("lastActivePage") || "home";
-const lastPage = (requestedPage && requestedPage !== "dashboard") ? requestedPage : (storedLastPage === "dashboard" ? "home" : storedLastPage);
+const lastPage = requestedPage || storedLastPage;
 showPage(lastPage);
-
-// 🚀 โหลดข้อมูลทั้งหมดเก็บไว้ในเครื่องเบื้องหลังทันทีที่เปิดแอป (Silent Background Load)
-// ปิดไว้หลังแยก dashboard ออกเป็นหน้าเฉพาะ เพื่อลดการ export ทั้งชีตจากผู้ใช้หน้างาน
-// loadDashboard(true);
 
 setTimeout(() => {
   if (currentPage === "handheld") {
