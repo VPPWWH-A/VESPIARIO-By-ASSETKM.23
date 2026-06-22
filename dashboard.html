@@ -2572,18 +2572,28 @@ function exportCountSheet(roundNum = 1) {
     // 1. แยกกลุ่มข้อมูลทรัพย์สินตามคลังหลัก
     const warehouseGroups = {};
     allAssets.forEach(row => {
-      const rawWh = String(row[4] || "ไม่ระบุคลัง").trim();
+      const rawWh = String(row[4] || "ไม่ระบุคลัง").trim().toUpperCase();
+      const rawArea = String(row[3] || "").trim();
+      const rawAreaUpper = rawArea.toUpperCase();
       let whGroup = "Diff";
-      if (rawWh.toUpperCase().includes("WH-A") || rawWh.toUpperCase().includes("WAREHOUSE A") || rawWh.toUpperCase().includes("WHA")) {
-        whGroup = "Warehouse A";
-      } else if (rawWh.toUpperCase().includes("WH-B") || rawWh.toUpperCase().includes("WAREHOUSE B") || rawWh.toUpperCase().includes("WHB")) {
-        whGroup = "Warehouse B";
-      } else if (rawWh.toUpperCase().includes("WHD")) {
-        whGroup = "WHD";
-      } else if (rawWh.toUpperCase().includes("OFFICE")) {
-        whGroup = "OFFICE";
-      } else if (rawWh.toUpperCase().includes("HR")) {
-        whGroup = "HR";
+      if (rawWh.includes("PDI")) {
+        whGroup = "PDIZONE";
+      } else if (rawWh.includes("WHD") || rawWh.includes("HR")) {
+        whGroup = "WHD+HR";
+      } else if (rawWh.includes("WH-A") || rawWh.includes("WAREHOUSE A") || rawWh.includes("WHA") || rawWh.includes("TRS")) {
+        if (rawArea.includes("โซน PDI") || rawAreaUpper.includes("PDI")) {
+          whGroup = "PDIZONE";
+        } else {
+          whGroup = "WAREHOUSE A+TRS";
+        }
+      } else if (rawWh.includes("WH-B") || rawWh.includes("WAREHOUSE B") || rawWh.includes("WHB")) {
+        if (rawArea.includes("ห้องทำงาน WH.B") || rawAreaUpper.includes("OFFICE B") || rawAreaUpper.includes("OFFICE WH.B") || rawAreaUpper.includes("OFFICE WH B")) {
+          whGroup = "OFFICE B";
+        } else {
+          whGroup = "WAREHOUSE B";
+        }
+      } else if (rawWh.includes("OFFICE")) {
+        whGroup = "OFFICE A";
       }
       
       if (!warehouseGroups[whGroup]) warehouseGroups[whGroup] = [];
@@ -2800,7 +2810,7 @@ function exportCountSheet(roundNum = 1) {
       }
 
       // ป้องกันชื่อชีตมีอักขระพิเศษที่ Excel ห้ามใช้ (เช่น / \ ? * : [ ])
-      const safeSheetName = whName.replace(/[:\/\\\?\*\[\]]/g, "").substring(0, 30);
+      const safeSheetName = whName.replace(/\//g, "-").replace(/[:\\\?\*\[\]]/g, "").substring(0, 30);
       XLSX.utils.book_append_sheet(wb, ws, safeSheetName);
     });
 
