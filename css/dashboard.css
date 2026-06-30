@@ -1,4 +1,4 @@
-﻿
+
 :root {
   --bg: #f8fafc; /* Slate 50 */
   --bg-card: #ffffff;
@@ -1915,42 +1915,43 @@ body {
   }
 }
 
-/* ===== LEFT MENU CREAM USABILITY PASS ===== */
+/* ===== LEFT MENU BLUE-WHITE PREMIUM USABILITY PASS ===== */
 :root {
-  --cream-sidebar: #f6f0e4;
-  --cream-sidebar-2: #efe5d2;
-  --cream-border: rgba(111, 85, 45, 0.18);
-  --cream-ink: #2a241d;
-  --cream-muted: #746857;
-  --cream-gold: #a77b3f;
+  --sidebar-bg-1: #f8fafc;
+  --sidebar-bg-2: #f1f5f9;
+  --sidebar-border: #e2e8f0;
+  --sidebar-ink: #0f172a;
+  --sidebar-muted: #64748b;
+  --sidebar-accent: #0284c7;
+  --sidebar-accent-hover: #0369a1;
 }
 
 .top-bar {
-  background: linear-gradient(180deg, var(--cream-sidebar), var(--cream-sidebar-2));
-  color: var(--cream-ink);
-  border-right: 1px solid var(--cream-border);
-  box-shadow: 7px 0 18px rgba(111, 85, 45, 0.12);
+  background: linear-gradient(180deg, var(--sidebar-bg-1), var(--sidebar-bg-2));
+  color: var(--sidebar-ink);
+  border-right: 1px solid var(--sidebar-border);
+  box-shadow: 4px 0 16px rgba(15, 23, 42, 0.03);
 }
 
 .brand-text {
   width: 100%;
   padding: 0 0 16px;
-  border-bottom: 1px solid var(--cream-border);
+  border-bottom: 1px solid var(--sidebar-border);
   text-align: center;
 }
 
 .brand-text .name {
-  color: var(--cream-ink);
+  color: var(--sidebar-ink);
   background: none;
   -webkit-text-fill-color: currentColor;
 }
 
 .brand-text .sub {
-  color: var(--cream-gold);
+  color: var(--sidebar-accent);
 }
 
 .brand-mark {
-  color: var(--cream-gold);
+  color: var(--sidebar-accent);
   font-family: 'Outfit', sans-serif;
   font-size: 28px;
   font-weight: 900;
@@ -1960,7 +1961,7 @@ body {
 
 .brand-company {
   margin-top: 0;
-  color: var(--cream-ink);
+  color: var(--sidebar-ink);
   font-family: 'Outfit', sans-serif;
   font-size: 13px;
   font-weight: 900;
@@ -1970,7 +1971,7 @@ body {
 
 .brand-country {
   margin-top: 5px;
-  color: var(--cream-muted);
+  color: var(--sidebar-muted);
   font-size: 7px;
   font-weight: 800;
   letter-spacing: 3px;
@@ -1978,7 +1979,7 @@ body {
 
 .brand-service {
   margin-top: 11px;
-  color: var(--cream-gold);
+  color: var(--sidebar-accent);
   font-size: 7px;
   font-weight: 800;
   line-height: 1.15;
@@ -1987,69 +1988,88 @@ body {
 
 .brand-location {
   margin-top: 3px;
-  color: #9c8b72;
+  color: #64748b;
   font-size: 7px;
   font-weight: 700;
   letter-spacing: 1.6px;
 }
 
 .sidebar-section {
-  border-top-color: var(--cream-border);
+  border-top-color: var(--sidebar-border);
 }
 
 .sidebar-label {
-  color: var(--cream-muted);
+  color: var(--sidebar-muted);
 }
 
 .view-btn,
 .profile-btn,
 .pillar-btn,
 .auth-btn {
-  color: var(--cream-ink);
-  background: rgba(255, 255, 255, 0.28);
-  border-color: transparent;
+  color: var(--sidebar-ink);
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid var(--sidebar-border);
 }
 
 .view-btn:hover,
 .profile-btn:hover,
 .pillar-btn:hover,
 .auth-btn:hover {
-  background: rgba(255, 255, 255, 0.62);
-  color: var(--cream-ink);
+  background: #ffffff;
+  color: var(--sidebar-accent);
+  border-color: var(--sidebar-accent);
 }
 
 .view-btn.active {
   background: #ffffff !important;
-  color: var(--ref-navy) !important;
-  border-color: rgba(5, 38, 74, 0.22) !important;
-  box-shadow: inset 3px 0 0 var(--ref-navy) !important;
+  color: var(--sidebar-accent) !important;
+  border-color: var(--sidebar-accent) !important;
+  box-shadow: inset 3px 0 0 var(--sidebar-accent) !important;
 }
 
 .pillar-btn.active,
 .profile-btn.active {
-  background: rgba(255, 255, 255, 0.78) !important;
-  color: #7a5428 !important;
-  border-color: rgba(167, 123, 63, 0.45) !important;
-  box-shadow: inset 3px 0 0 var(--cream-gold) !important;
+  background: #ffffff !important;
+  color: var(--sidebar-accent) !important;
+  border-color: var(--sidebar-accent) !important;
+  box-shadow: inset 3px 0 0 var(--sidebar-accent) !important;
 }
 
 .top-bar .control-btn-primary,
 .top-bar .auth-btn.login {
   background: #ffffff !important;
-  color: var(--cream-ink) !important;
-  border-color: var(--cream-border) !important;
+  color: var(--sidebar-ink) !important;
+  border-color: var(--sidebar-border) !important;
+}
+
+.top-bar .control-btn-primary:hover,
+.top-bar .auth-btn.login:hover {
+  border-color: var(--sidebar-accent) !important;
+  color: var(--sidebar-accent) !important;
 }
 
 .top-bar .control-btn-success {
-  background: rgba(15, 118, 110, 0.1) !important;
-  color: #0f5f58 !important;
-  border-color: rgba(15, 118, 110, 0.22) !important;
+  background: rgba(16, 185, 129, 0.08) !important;
+  color: #059669 !important;
+  border-color: rgba(16, 185, 129, 0.2) !important;
+}
+
+.top-bar .control-btn-success:hover {
+  background: #059669 !important;
+  color: #ffffff !important;
+  border-color: #059669 !important;
 }
 
 .top-bar .auth-btn.logout {
-  background: rgba(180, 35, 24, 0.08);
-  color: #9f241b;
-  border-color: rgba(180, 35, 24, 0.16);
+  background: rgba(239, 68, 68, 0.08);
+  color: #dc2626;
+  border-color: rgba(239, 68, 68, 0.2);
+}
+
+.top-bar .auth-btn.logout:hover {
+  background: #dc2626;
+  color: #ffffff;
+  border-color: #dc2626;
 }
 
 /* ===== SIDEBAR BREATHING ROOM PASS ===== */
@@ -2859,3 +2879,71 @@ body {
 .overview-modal-row {
   border-radius: 7px;
 }
+
+/* ===== VIEWPORT HEIGHT MATCHING PASS (NO WINDOW SCROLLBAR ON DESKTOP) ===== */
+@media (min-width: 901px) {
+  html, body {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+  }
+  
+  .main-content {
+    height: 100vh;
+    max-height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
+    padding: 20px 24px;
+    gap: 12px;
+  }
+
+  /* Make Overview Grid fill remaining space and scroll internally if needed */
+  #overview-panels, #overview-panels-unreg {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding-right: 4px;
+  }
+
+  /* Table tools and filters should stay fixed */
+  #table-tools-container, #filter-tab-container {
+    flex: 0 0 auto;
+  }
+
+  /* Table containers should grow to fill height and use sticky elements */
+  .table-container {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    display: flex;
+    flex-direction: column;
+  }
+
+  .table-header {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: #fbfbfc;
+    flex-shrink: 0;
+  }
+
+  #table-body, #table-unreg-body {
+    flex: 1 1 auto;
+  }
+
+  #master-pagination, #unreg-pagination {
+    position: sticky;
+    bottom: 0;
+    z-index: 10;
+    background: #f8fafc;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+}
+
