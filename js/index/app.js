@@ -565,7 +565,7 @@ function showNotFound(assetNo) {
   const addBtn = document.getElementById("btn-notfound-add");
   if (addBtn) addBtn.onclick = () => showAddForm(rawNo);
 
-  // setTimeout(() => { showAddForm(rawNo); }, 500); // Disabled auto-redirect to allow cumulative scanning
+  setTimeout(() => { showAddForm(rawNo); }, 500);
 }
 
 function decodeThaiKeyboard(str) {
