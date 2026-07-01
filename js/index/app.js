@@ -19,7 +19,7 @@ function showError(msg) {
     </div>`);
 }
 
-// âœ… Escape HTML à¹€à¸žà¸·à¹ˆà¸­à¸›à¹‰à¸­à¸‡à¸à¸±à¸™ XSS à¸ˆà¸²à¸à¸„à¹ˆà¸²à¸—à¸µà¹ˆ scan à¸¡à¸²
+// Escape HTML from scanned values before rendering.
 function escHtml(str) {
   return String(str)
     .replace(/&/g, "&amp;")
@@ -96,22 +96,22 @@ function showStockCountModal(data) {
   opt1.disabled = false;
   opt2.disabled = false;
 
-  // à¸šà¸±à¸‡à¸„à¸±à¸šà¸ªà¸´à¸—à¸˜à¸´à¹Œà¸à¸²à¸£à¹€à¸¥à¸·à¸­à¸à¸•à¸²à¸¡à¸£à¸­à¸šà¸­à¸¢à¹ˆà¸²à¸‡à¹€à¸„à¸£à¹ˆà¸‡à¸„à¸£à¸±à¸”
+  // Enforce count round selection based on current count state.
   if (!hasCount1 && !hasCount2) {
-    // à¸–à¹‰à¸²à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¹€à¸„à¸¢à¸™à¸±à¸šà¹€à¸¥à¸¢ à¸šà¸±à¸‡à¸„à¸±à¸šà¸™à¸±à¸š Count 1 à¹€à¸—à¹ˆà¸²à¸™à¸±à¹‰à¸™ (à¸›à¸´à¸”à¸à¸²à¸£à¹€à¸¥à¸·à¸­à¸ Count 2)
+    // First pass only.
     opt2.disabled = true;
     roundSelect.value = "1";
   } else if (hasCount1 && !hasCount2) {
-    // à¸–à¹‰à¸²à¸™à¸±à¸š Count 1 à¹„à¸›à¹à¸¥à¹‰à¸§ à¸šà¸±à¸‡à¸„à¸±à¸šà¸™à¸±à¸š Count 2 à¹€à¸—à¹ˆà¸²à¸™à¸±à¹‰à¸™ (à¸›à¸´à¸”à¸à¸²à¸£à¹€à¸¥à¸·à¸­à¸ Count 1)
+    // Second pass after Count 1 is done.
     opt1.disabled = true;
     roundSelect.value = "2";
   } else if (hasCount1 && hasCount2) {
-    // à¸–à¹‰à¸²à¸™à¸±à¸šà¸„à¸£à¸šà¸—à¸±à¹‰à¸‡à¸„à¸¹à¹ˆà¹à¸¥à¹‰à¸§ à¸›à¸´à¸”à¸•à¸±à¸§à¹€à¸¥à¸·à¸­à¸à¸—à¸±à¹‰à¸‡à¸«à¸¡à¸”
+    // Both passes are complete.
     opt1.disabled = true;
     opt2.disabled = true;
     roundSelect.value = "1";
   } else {
-    // à¸à¸£à¸“à¸µà¸žà¸´à¹€à¸¨à¸©à¸­à¸·à¹ˆà¸™ à¹†
+    // Fallback state.
     opt1.disabled = false;
     opt2.disabled = false;
     roundSelect.value = "1";
@@ -259,7 +259,7 @@ async function compressImageToBase64(file, maxSizeMB = 0.18) {
         let width = img.width;
         let height = img.height;
         
-        // âœ… Resize à¸„à¸£à¸±à¹‰à¸‡à¹€à¸”à¸µà¸¢à¸§ (à¹„à¸¡à¹ˆ loop)
+        // Resize once to keep compression predictable.
         const maxDim = 720;
         if (width > maxDim || height > maxDim) {
           const ratio = Math.min(maxDim / width, maxDim / height);
@@ -270,7 +270,7 @@ async function compressImageToBase64(file, maxSizeMB = 0.18) {
         canvas.height = height;
         ctx.drawImage(img, 0, 0, width, height);
         
-        // âœ… Binary search quality (à¸¥à¸” loop à¸ˆà¸²à¸ 5 à¹€à¸«à¸¥à¸·à¸­ max 3)
+        // Binary search quality with a small fixed limit.
         let quality = 0.6;
         let base64String = canvas.toDataURL("image/jpeg", quality);
         let sizeMB = (base64String.length * 0.75) / (1024 * 1024);
@@ -278,7 +278,7 @@ async function compressImageToBase64(file, maxSizeMB = 0.18) {
         let minQuality = 0.1;
         let maxQuality = 0.6;
         let iterations = 0;
-        const maxIterations = 3;  // âš ï¸ Max 3 à¸„à¸£à¸±à¹‰à¸‡ (à¹„à¸¡à¹ˆà¹ƒà¸Šà¹ˆ while loop)
+        const maxIterations = 3;
         
         while (sizeMB > maxSizeMB && iterations < maxIterations && quality > minQuality) {
           iterations++;
@@ -292,7 +292,7 @@ async function compressImageToBase64(file, maxSizeMB = 0.18) {
           sizeMB = (base64String.length * 0.75) / (1024 * 1024);
         }
         
-        // âœ… à¸–à¹‰à¸²à¸¢à¸±à¸‡à¹ƒà¸«à¸à¹ˆà¹€à¸à¸´à¸™ à¸¥à¸”à¸‚à¸™à¸²à¸”à¸„à¸£à¸±à¹‰à¸‡à¹€à¸”à¸µà¸¢à¸§
+        // If it is still too large, reduce dimensions once.
         if (sizeMB > maxSizeMB) {
           const newWidth = Math.round(width * 0.75);
           const newHeight = Math.round(height * 0.75);
@@ -371,11 +371,11 @@ function renderBgUploadQueue() {
   }
 
   if (bgUploadQueue.length > 0) {
-    ui.innerHTML = `<span class="spinner-sm" style="border-width:2px; width:12px; height:12px; margin-right:6px; border-top-color:#fff;"></span>à¸à¸³à¸¥à¸±à¸‡à¸šà¸±à¸™à¸—à¸¶à¸à¹à¸¥à¸°à¸­à¸±à¸›à¹‚à¸«à¸¥à¸” (${bgUploadQueue.length} à¸£à¸²à¸¢à¸à¸²à¸£)`;
+    ui.innerHTML = `<span class="spinner-sm" style="border-width:2px; width:12px; height:12px; margin-right:6px; border-top-color:#fff;"></span>กำลังบันทึกและอัปโหลดรูป (${bgUploadQueue.length} รายการ)`;
     ui.style.background = "var(--primary)";
     ui.style.display = "flex";
   } else {
-    ui.innerHTML = `âœ… à¸­à¸±à¸›à¹‚à¸«à¸¥à¸”à¹€à¸ªà¸£à¹‡à¸ˆà¸ªà¸´à¹‰à¸™`;
+    ui.innerHTML = `✓ อัปโหลดรูปเสร็จสิ้น`;
     ui.style.background = "var(--success)";
     setTimeout(() => {
       if (bgUploadQueue.length === 0) ui.style.display = "none";
@@ -386,7 +386,7 @@ function renderBgUploadQueue() {
 window.addEventListener("beforeunload", function (e) {
   if (bgUploadQueue.length > 0) {
     e.preventDefault();
-    e.returnValue = "à¸¢à¸±à¸‡à¸¡à¸µà¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸à¸³à¸¥à¸±à¸‡à¸­à¸±à¸›à¹‚à¸«à¸¥à¸”à¹€à¸šà¸·à¹‰à¸­à¸‡à¸«à¸¥à¸±à¸‡ à¸„à¸¸à¸“à¹à¸™à¹ˆà¹ƒà¸ˆà¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆà¸—à¸µà¹ˆà¸ˆà¸°à¸­à¸­à¸à¸ˆà¸²à¸à¸«à¸™à¹‰à¸²à¸™à¸µà¹‰?";
+    e.returnValue = "ยังมีรูปกำลังอัปโหลดอยู่เบื้องหลัง คุณแน่ใจหรือไม่ว่าจะออกจากหน้านี้?";
     return e.returnValue;
   }
 });
@@ -416,7 +416,7 @@ async function confirmScanCount() {
   // #endregion
   const btn = document.getElementById("btn-scan-confirm");
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-sm" style="margin-right:6px;"></span>à¸à¸³à¸¥à¸±à¸‡à¸šà¸±à¸™à¸—à¸¶à¸...';
+  btn.innerHTML = '<span class="spinner-sm" style="margin-right:6px;"></span>กำลังบันทึก...';
 
   const newWarehouse = document.getElementById("scan-update-warehouse").value;
   const newArea = document.getElementById("scan-update-area").value;
@@ -429,10 +429,10 @@ async function confirmScanCount() {
 
   if (newWarehouse === "Warehouse A" || newWarehouse === "Warehouse B") {
     const station = document.getElementById("scan-update-station").value;
-    if (!station || !newArea || newArea === "à¹‚à¸›à¸£à¸”à¹€à¸¥à¸·à¸­à¸à¹à¸œà¸™à¸à¸à¹ˆà¸­à¸™" || newArea === "à¹„à¸¡à¹ˆà¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™") {
-      alert("âŒ à¸à¸£à¸¸à¸“à¸²à¹€à¸¥à¸·à¸­à¸à¹à¸œà¸™à¸à¹à¸¥à¸°à¸žà¸·à¹‰à¸™à¸—à¸µà¹ˆà¸¢à¹ˆà¸­à¸¢à¸ªà¸³à¸«à¸£à¸±à¸š " + newWarehouse);
+    if (!station || !newArea || newArea === "โปรดเลือกแผนกก่อน" || newArea === "ไม่เปลี่ยน") {
+      alert("กรุณาเลือกแผนกและพื้นที่ย่อยสำหรับ " + newWarehouse);
       btn.disabled = false;
-      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg> à¸¢à¸·à¸™à¸¢à¸±à¸™à¸™à¸±à¸šà¸ªà¸•à¹Šà¸­à¸';
+      btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg> ยืนยันนับสต็อก';
       return;
     }
   }
@@ -440,7 +440,7 @@ async function confirmScanCount() {
   try {
     await yieldToUI();
 
-    // ðŸš€ Single POST request for everything (Count mark, Location update, Image upload)
+    // Single POST request for count mark, location update, and deferred image upload marker.
     const payload = {
       key: API_SECRET,
       action: "updateAsset",
@@ -456,7 +456,7 @@ async function confirmScanCount() {
       countRound: countRound,
       image: "",
       hasDeferredImage: !!imageFile,
-      remarks: pendingScanData.isBarcodeDamagedFlow ? "à¸šà¸²à¸£à¹Œà¹‚à¸„à¹‰à¸”à¹€à¸ªà¸µà¸¢à¸«à¸²à¸¢ à¹à¸•à¹ˆà¸¢à¸±à¸‡à¹€à¸«à¹‡à¸™à¸£à¸«à¸±à¸ª" : ""
+      remarks: pendingScanData.isBarcodeDamagedFlow ? "บาร์โค้ดเสียหาย แต่ยังเห็นรหัส" : ""
     };
 
     const controller = new AbortController();
@@ -470,7 +470,7 @@ async function confirmScanCount() {
         signal: controller.signal
       }, { requestId, assetNo: pendingScanData.assetNo, hasDeferredImage: !!imageFile });
     } catch (e) {
-      if (e.name === "AbortError") throw new Error("âŒ à¸«à¸¡à¸”à¹€à¸§à¸¥à¸²à¹ƒà¸™à¸à¸²à¸£à¸šà¸±à¸™à¸—à¸¶à¸ - à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¹€à¸„à¸£à¸·à¸­à¸‚à¹ˆà¸²à¸¢");
+      if (e.name === "AbortError") throw new Error("หมดเวลาในการบันทึก - ตรวจสอบเครือข่าย");
       throw e;
     } finally {
       if (timerId) clearTimeout(timerId);
@@ -481,7 +481,7 @@ async function confirmScanCount() {
     dbgLog('index.html:confirmScanCount:response', 'updateAsset response', { assetNo: pendingScanData.assetNo, status: uploadData && uploadData.status, message: uploadData && uploadData.message }, 'H1-H4');
     // #endregion
     if (!uploadData || uploadData.status === "error") {
-      throw new Error(uploadData ? uploadData.message : "à¸à¸²à¸£à¸•à¸­à¸šà¸à¸¥à¸±à¸šà¹„à¸¡à¹ˆà¸–à¸¹à¸à¸•à¹‰à¸­à¸‡");
+      throw new Error(uploadData ? uploadData.message : "การตอบกลับไม่ถูกต้อง");
     }
 
     const imageUrl = uploadData.imageUrl || "";
@@ -498,7 +498,7 @@ async function confirmScanCount() {
         newArea || pendingScanData.area || "",
         newWarehouse || pendingScanData.warehouse || "",
         new Date().toISOString(),
-        newStatus || "à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸­à¸¢à¸¹à¹ˆ",
+        newStatus || "ใช้งานอยู่",
         new Date().toISOString(),
         "Unregistered",
         "",
@@ -532,7 +532,7 @@ async function confirmScanCount() {
         if (newWarehouse) allAssets[assetIdx][4] = newWarehouse;
         if (imageUrl) allAssets[assetIdx][10] = imageUrl;
         if (pendingScanData.isBarcodeDamagedFlow) {
-          allAssets[assetIdx][9] = "à¸šà¸²à¸£à¹Œà¹‚à¸„à¹‰à¸”à¹€à¸ªà¸µà¸¢à¸«à¸²à¸¢ à¹à¸•à¹ˆà¸¢à¸±à¸‡à¹€à¸«à¹‡à¸™à¸£à¸«à¸±à¸ª";
+          allAssets[assetIdx][9] = "บาร์โค้ดเสียหาย แต่ยังเห็นรหัส";
         }
       }
     }
@@ -548,19 +548,19 @@ async function confirmScanCount() {
     }
     setResult(`
       <div class="result-card success">
-        <div style="font-size:36px;margin-bottom:8px;">âœ…</div>
-        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">à¸™à¸±à¸šà¸ªà¸•à¹Šà¸­à¸à¸ªà¸³à¹€à¸£à¹‡à¸ˆ</div>
+        <div style="font-size:36px;margin-bottom:8px;">✓</div>
+        <div style="font-size:11px;color:var(--text-muted);text-transform:uppercase;">นับสต็อกสำเร็จ</div>
         <div style="font-size:22px;font-weight:800;margin-top:4px;">${escHtml(pendingScanData.assetNo)}</div>
         <div style="font-size:14px;color:var(--text-dim);margin-top:4px;">${escHtml(pendingScanData.assetName)}</div>
         <div style="font-size:12px;color:var(--text-muted);margin-top:4px;">Ref: ${escHtml(responseRequestId)}${escHtml(durationText)}</div>
         <div style="font-size:12px;color:var(--success);margin-top:4px;">Count ${escHtml(countRound)}</div>
-        ${hasLocationUpdate ? '<div style="font-size:12px;color:var(--primary);margin-top:6px;">ðŸ“ à¸­à¸±à¸›à¹€à¸”à¸•à¸•à¸³à¹à¸«à¸™à¹ˆà¸‡à¹à¸¥à¹‰à¸§</div>' : ''}
-        ${imageFile ? '<div style="font-size:12px;color:var(--primary);margin-top:4px;">ðŸ“· à¸à¸³à¸¥à¸±à¸‡à¸­à¸±à¸›à¹‚à¸«à¸¥à¸”à¸£à¸¹à¸›à¸•à¸²à¸¡à¸«à¸¥à¸±à¸‡</div>' : ''}
+        ${hasLocationUpdate ? '<div style="font-size:12px;color:var(--primary);margin-top:6px;">อัปเดตตำแหน่งแล้ว</div>' : ''}
+        ${imageFile ? '<div style="font-size:12px;color:var(--primary);margin-top:4px;">กำลังอัปโหลดรูปต่อในคิวเบื้องหลัง</div>' : ''}
       </div>`);
   } catch (err) {
-    alert("âŒ à¹€à¸à¸´à¸”à¸‚à¹‰à¸­à¸œà¸´à¸”à¸žà¸¥à¸²à¸”: " + (err.message || "à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¸šà¸±à¸™à¸—à¸¶à¸à¹„à¸”à¹‰"));
+    alert("เกิดข้อผิดพลาด: " + (err.message || "ไม่สามารถบันทึกได้"));
     btn.disabled = false;
-    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg> à¸¢à¸·à¸™à¸¢à¸±à¸™à¸™à¸±à¸šà¸ªà¸•à¹Šà¸­à¸';
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg> ยืนยันนับสต็อก';
     resumeScannerAfterAction();
   }
 }
@@ -585,7 +585,7 @@ function showNotFound(assetNo) {
 }
 
 function decodeThaiKeyboard(str) {
-  const th = "à¹…/-à¸ à¸–à¸¸à¸¶à¸„à¸•à¸ˆà¸‚à¸Šà¹†à¹„à¸³à¸žà¸°à¸±à¸µà¸£à¸™à¸¢à¸šà¸¥à¸ƒà¸Ÿà¸«à¸à¸”à¹€à¹‰à¹ˆà¸²à¸ªà¸§à¸‡à¸œà¸›à¹à¸­à¸´à¸·à¸—à¸¡à¹ƒà¸à¹‘à¹’à¹“à¹”à¸¹à¸¿à¹•à¹–à¹—à¹˜à¹™à¹\"à¸Žà¸‘à¸˜à¹à¹Šà¸“à¸¯à¸à¸à¸…à¸¤à¸†à¸à¹‚à¸Œà¹‡à¹‹à¸©à¸¨à¸‹à¸‰à¸®à¸ºà¹Œà¸’à¸¬à¸¦";
+  const th = "ๅ/-ภถุึคตจขชๆไำพะัีรนยบลฃฟหกดเ้่าสวงผปแอิืทมใฝ+๑๒๓๔ู฿๕๖๗๘๙๐\"ฎฑธํ๊ณฯญฐ,ฤฆฏโฌ็๋ษศซ.()ฉฮฺ์?ฒฬฦ";
   const en = "1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./!@#$%^&*()_+QWERTYUIOP{}|ASDFGHJKL:\"ZXCVBNM<>?";
   let result = "";
   for(let i=0; i<str.length; i++) {
@@ -600,12 +600,12 @@ async function onScanSuccess(decodedText, isHandheld = false) {
   if (isProcessing) return;
   isProcessing = true;
   
-  // Ã Â¹ÂÃ Â¸â€ºÃ Â¸Â¥Ã Â¸â€¡Ã Â¸Â Ã Â¸Â²Ã Â¸Â©Ã Â¸Â²Ã Â¹â€žÃ Â¸â€”Ã Â¸Â¢Ã Â¸ÂÃ Â¸Â¥Ã Â¸Â±Ã Â¸Å¡Ã Â¹â‚¬Ã Â¸â€ºÃ Â¹â€¡Ã Â¸â„¢Ã Â¸Â­Ã Â¸Â±Ã Â¸â€¡Ã Â¸ÂÃ Â¸Â¤Ã Â¸Â©
+  // Convert Thai-keyboard input back to English asset codes.
   let cleanCode = decodeThaiKeyboard(String(decodedText)).trim().toUpperCase();
   
   if (html5QrCode && isScanning) { try { await html5QrCode.pause(true); } catch(e){} }
   
-  // Ã°Å¸Å¡â‚¬ Instant Local Search (Performance Optimization) - Run FIRST and NON-BLOCKING!
+  // Instant local search first for scanner performance.
   const localMatch = allAssets.find(row => String(row[0]).trim().toUpperCase() === cleanCode);
   const unregMatch = allUnregAssets ? allUnregAssets.find(row => String(row[0]).trim().toUpperCase() === cleanCode) : null;
 
@@ -666,7 +666,7 @@ async function onScanSuccess(decodedText, isHandheld = false) {
             if (currentSuccessAsset && currentSuccessAsset.textContent === cleanCode) {
               const resField = document.getElementById("success-last-result");
               const scanField = document.getElementById("success-last-scan");
-              if (resField) resField.textContent = liveLastResult === "Count" ? "Ã Â¸â€¢Ã Â¸Â£Ã Â¸Â§Ã Â¸Ë†Ã Â¸ÂªÃ Â¸Â­Ã Â¸Å¡Ã Â¹ÂÃ Â¸Â¥Ã Â¹â€°Ã Â¸Â§" : liveLastResult;
+              if (resField) resField.textContent = liveLastResult === "Count" ? "ตรวจสอบแล้ว" : liveLastResult;
               if (scanField) scanField.textContent = formatDateTime(liveLastScan);
             }
           }
@@ -677,7 +677,7 @@ async function onScanSuccess(decodedText, isHandheld = false) {
     })();
 
   } else {
-    // Ã°Å¸â€Â Fallback: read-only lookup since it is not found in local cache
+    // Fallback read-only lookup when not found in local cache.
     setResult("");
     try {
       const scanStatusPromise = fetchScanStatusWithTimeout(cleanCode, isHandheld ? 1800 : 2500);
@@ -805,6 +805,19 @@ async function handlePhotoScan(event) {
   }
 }
 
+function getPreferredBackCamera(cameras) {
+  if (!Array.isArray(cameras) || cameras.length === 0) return null;
+  const backCamera = cameras.find(camera => /back|rear|environment/i.test(camera.label || ""));
+  if (backCamera) return backCamera;
+
+  // Mobile browsers often list the front camera first when labels are unavailable.
+  return cameras[cameras.length - 1];
+}
+
+function getScannerConfig() {
+  return { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.7777778 };
+}
+
 async function startScanner() {
   const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
   const isNativeSupported = ("BarcodeDetector" in window);
@@ -817,17 +830,36 @@ async function startScanner() {
   if (isScanning) return;
   try {
     html5QrCode = html5QrCode || new Html5Qrcode("reader");
-    const cameras = await Html5Qrcode.getCameras();
-    if (!cameras || cameras.length === 0) throw new Error("ไม่พบกล้อง");
+    const scannerConfig = getScannerConfig();
+    const onDecoded = decodedText => onScanSuccess(decodedText);
+    const onScanError = () => {};
 
-    const backCamera = cameras.find(camera => /back|rear|environment/i.test(camera.label || ""));
-    cachedCameraId = cachedCameraId || (backCamera ? backCamera.id : cameras[0].id);
-    await html5QrCode.start(
-      cachedCameraId,
-      { fps: 10, qrbox: { width: 250, height: 250 }, aspectRatio: 1.7777778 },
-      decodedText => onScanSuccess(decodedText),
-      () => {}
-    );
+    try {
+      await html5QrCode.start(
+        { facingMode: { ideal: "environment" } },
+        scannerConfig,
+        onDecoded,
+        onScanError
+      );
+      cachedCameraId = null;
+    } catch (facingModeErr) {
+      console.warn("Environment camera constraint failed, trying deviceId fallback", facingModeErr);
+      cachedCameraId = null;
+
+      const cameras = await Html5Qrcode.getCameras();
+      if (!cameras || cameras.length === 0) throw new Error("ไม่พบกล้อง");
+
+      const preferredCamera = getPreferredBackCamera(cameras);
+      cachedCameraId = preferredCamera ? preferredCamera.id : null;
+      if (!cachedCameraId) throw new Error("ไม่พบกล้อง");
+
+      await html5QrCode.start(
+        cachedCameraId,
+        scannerConfig,
+        onDecoded,
+        onScanError
+      );
+    }
 
     isScanning = true;
     const startBtn = document.getElementById("btn-start");
@@ -894,6 +926,33 @@ function closeHandheldScanPopup() {
   }
 }
 
+function hideHandheldKeyboard() {
+  const handheldInput = document.getElementById("handheld-input");
+  if (handheldInput) handheldInput.blur();
+
+  const activeEl = document.activeElement;
+  if (activeEl && ["INPUT", "TEXTAREA", "SELECT"].includes(activeEl.tagName)) {
+    activeEl.blur();
+  }
+}
+
+function hasOpenIndexPopup() {
+  return !!document.querySelector(".modal-overlay:not(.hidden), .handheld-scan-popup:not(.hidden)");
+}
+
+function focusHandheldInputWhenReady() {
+  if (currentPage !== "handheld" || hasOpenIndexPopup()) return;
+
+  setTimeout(() => {
+    if (currentPage !== "handheld" || hasOpenIndexPopup()) return;
+    const hhInput = document.getElementById("handheld-input");
+    if (hhInput) {
+      setHandheldDisplay(HANDHELD_PLACEHOLDER, true);
+      hhInput.focus();
+    }
+  }, 120);
+}
+
 function flashHandheldInput(sourceInput) {
   if (!sourceInput) return;
 
@@ -914,21 +973,27 @@ async function submitHandheldCode(code, sourceInput) {
     showPage("handheld");
   }
 
+  hideHandheldKeyboard();
   showHandheldAccepted(cleanCode);
   showHandheldScanPopup(cleanCode);
   flashHandheldInput(sourceInput);
   playHandheldBeep();
 
-  await onScanSuccess(cleanCode, true);
-  handheldBuffer = "";
+  try {
+    await onScanSuccess(cleanCode, true);
+  } finally {
+    handheldBuffer = "";
 
-  if (sourceInput) {
-    sourceInput.value = "";
+    if (sourceInput) {
+      sourceInput.value = "";
+    }
+
+    focusHandheldInputWhenReady();
   }
 }
 
 document.addEventListener("keydown", function(e) {
-  // à¹„à¸¡à¹ˆà¸”à¸±à¸à¸ˆà¸±à¸šà¸–à¹‰à¸²à¸à¸³à¸¥à¸±à¸‡à¸žà¸´à¸¡à¸žà¹Œà¹ƒà¸™ input, textarea à¸«à¸£à¸·à¸­ select
+  // Do not intercept typing inside form controls.
   if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
     return;
   }
@@ -962,7 +1027,7 @@ document.addEventListener("keydown", function(e) {
   }
 });
 
-// Listener à¹à¸¢à¸à¹€à¸‰à¸žà¸²à¸°à¸ªà¸³à¸«à¸£à¸±à¸šà¸Šà¹ˆà¸­à¸‡à¸ªà¹à¸à¸™ Handheld
+// Dedicated listener for the handheld scanner input.
 const handheldInput = document.getElementById('handheld-input');
 
 handheldInput.addEventListener('keydown', function(e) {

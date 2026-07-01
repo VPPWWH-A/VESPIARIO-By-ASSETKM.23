@@ -1,4 +1,4 @@
-let allAssets = [], allUnregAssets = [], exportHeaders = [], scanDurationByAsset = {}, unregAddedDurationByAsset = {};
+let allAssets = [], allUnregAssets = [], exportHeaders = [], countMeta = {}, countPeriods = [], currentCountPeriod = "", dashboardSummary = null, warehouseOverviewRows = [], scanDurationByAsset = {}, unregAddedDurationByAsset = {};
 let selectedMasterAssets = [], selectedUnregAssets = [];
 let currentMasterPage = 1, currentUnregPage = 1;
 const PAGE_SIZE = 50;
@@ -144,6 +144,10 @@ function updateAuthUi() {
     btn.classList.toggle("locked-action", !loggedIn);
     btn.title = loggedIn ? "Approve item" : "Sign in before approval";
   });
+  document.querySelectorAll(".login-required-action").forEach(btn => {
+    btn.classList.toggle("locked-action", !loggedIn);
+    btn.title = loggedIn ? "Start new count round" : "Sign in before starting a new count round";
+  });
 }
 
 function openApproveLogin() {
@@ -185,7 +189,30 @@ function setCountProfile(profile) {
   currentCountProfile = profile === 2 ? 2 : 1;
   document.getElementById("count-profile-1").classList.toggle("active", currentCountProfile === 1);
   document.getElementById("count-profile-2").classList.toggle("active", currentCountProfile === 2);
-  renderOverview();
+  renderOverview({ preserveSummaryOnMissingCount: true });
+  if (typeof loadDashboard === "function") loadDashboard();
+}
+
+function updateCountPeriodSelect() {
+  const select = document.getElementById("count-period-select");
+  if (!select) return;
+  const periods = Array.isArray(countPeriods) ? countPeriods : [];
+  const active = currentCountPeriod || (countMeta && countMeta.activeCountPeriod) || "";
+  select.innerHTML = periods.length
+    ? periods.map(period => {
+        const suffix = period && period.isEmpty ? " (ยังไม่มีข้อมูล)" : "";
+        return `<option value="${escHtml(period.key)}">${escHtml((period.label || period.key) + suffix)}</option>`;
+      }).join("")
+    : '<option value="">Latest count month</option>';
+  select.value = active && periods.some(period => period.key === active) ? active : "";
+  select.disabled = periods.length <= 1;
+}
+
+function setCountPeriod(periodKey) {
+  const nextPeriod = String(periodKey || "").trim();
+  if (nextPeriod === currentCountPeriod) return;
+  currentCountPeriod = nextPeriod;
+  if (typeof loadDashboard === "function") loadDashboard();
 }
 
 function setDashboardView(view) {
@@ -211,6 +238,8 @@ function syncDashboardView() {
   document.getElementById("table-tools-container").classList.toggle("hidden", !isTable);
   document.getElementById("overview-panels").classList.toggle("hidden", !isCount || isTable);
   document.getElementById("overview-panels-unreg").classList.toggle("hidden", isCount || isTable);
+  const countPeriodWarning = document.getElementById("count-period-warning");
+  if (countPeriodWarning) countPeriodWarning.classList.toggle("hidden", !isCount || isTable);
   document.getElementById("filter-tab-container").classList.toggle("hidden", !isCount || !isTable);
   document.getElementById("table-master-container").classList.toggle("hidden", !isCount || !isTable);
   document.getElementById("table-unreg-container").classList.toggle("hidden", currentPillar !== 'unreg' || !isTable);
@@ -327,27 +356,62 @@ function normalizeHeaderText(value) {
   return String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
 }
 
-function getProfileCountIndex(profile) {
-  if (!Array.isArray(exportHeaders) || exportHeaders.length === 0) return -1;
-  const now = new Date();
-  const months = ["ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค."];
-  const month = months[now.getMonth()];
-  const year = now.getFullYear();
-  const wanted = normalizeHeaderText(`เช็ค ${month} ${year} Count ${profile}`);
-  let idx = exportHeaders.findIndex(h => normalizeHeaderText(h) === wanted);
-  if (idx >= 0) return idx;
-  if (profile === 1) {
-    const legacy = normalizeHeaderText(`เช็ค ${month} ${year}`);
-    idx = exportHeaders.findIndex(h => normalizeHeaderText(h) === legacy);
-  }
-  return idx;
-}
-
 function isCountedValue(value) {
   const text = String(value == null ? "" : value).trim();
   if (!text) return false;
   const lower = text.toLowerCase();
   return !["0", "false", "no", "n", "-", "pending"].includes(lower);
+}
+
+function getReliableProfileCountIndex(profile) {
+  if (!Array.isArray(exportHeaders) || exportHeaders.length === 0) return -1;
+
+  const metaKey = profile === 2 ? "count2Index" : "count1Index";
+  const metaIdx = Number(countMeta && countMeta[metaKey]);
+  if (Number.isInteger(metaIdx) && metaIdx >= 0 && metaIdx < exportHeaders.length) return metaIdx;
+
+  const metaNameKey = profile === 2 ? "count2Name" : "count1Name";
+  const wanted = normalizeHeaderText(countMeta && countMeta[metaNameKey]);
+  let idx = wanted ? exportHeaders.findIndex(h => normalizeHeaderText(h) === wanted) : -1;
+  if (idx >= 0) return idx;
+
+  if (profile === 1) {
+    const legacy = normalizeHeaderText(countMeta && countMeta.legacyName);
+    idx = legacy ? exportHeaders.findIndex(h => normalizeHeaderText(h) === legacy) : -1;
+    if (idx >= 0) return idx;
+  }
+
+  if (countMeta && countMeta.activeCountPeriod) return -1;
+
+  idx = exportHeaders.findIndex(h => {
+    const normalized = normalizeHeaderText(h);
+    return normalized.includes(`count ${profile}`) || normalized.endsWith(`count${profile}`);
+  });
+  return idx;
+}
+
+function updateCountPeriodWarning() {
+  const panels = document.getElementById("overview-panels");
+  if (!panels || !panels.parentNode) return;
+  let warning = document.getElementById("count-period-warning");
+  if (!warning) {
+    warning = document.createElement("div");
+    warning.id = "count-period-warning";
+    warning.className = "count-period-warning";
+    panels.parentNode.insertBefore(warning, panels);
+  }
+  const hasCountColumn = getReliableProfileCountIndex(currentCountProfile) >= 0;
+  const selectedEmpty = !!(countMeta && countMeta.isEmpty);
+  const missingColumn = !!(countMeta && countMeta.activeCountPeriod && !hasCountColumn);
+  if (selectedEmpty) {
+    warning.textContent = "Selected count month has no counted records yet.";
+    warning.classList.remove("hidden");
+  } else if (missingColumn) {
+    warning.textContent = "Count column not found for the selected month. Showing backend summary where available.";
+    warning.classList.remove("hidden");
+  } else {
+    warning.classList.add("hidden");
+  }
 }
 
 function normalizeGroupName(value, fallback) {
@@ -396,7 +460,7 @@ function buildPriorityBreakdown(warehouseRows, zoneRows) {
 }
 
 function buildWarehouseZoneOverview(rows, countIndex) {
-  const warehouseOrder = ["Warehouse A", "Warehouse B", "OFFICE", "WHD", "HR", "Diff"];
+  const warehouseOrder = ["Warehouse A", "Warehouse B", "OFFICE", "WHD", "HR", "KM23", "Diff"];
   const normalizeWarehouseDisplay = (value) => {
     const text = String(value || "").trim();
     const lower = text.toLowerCase();
@@ -405,14 +469,34 @@ function buildWarehouseZoneOverview(rows, countIndex) {
     if (lower === "office") return "OFFICE";
     if (lower === "whd") return "WHD";
     if (lower === "hr") return "HR";
+    if (["km23", "km.23", "head office km.23", "head office km23"].includes(lower)) return "KM23";
     return "Diff";
+  };
+  const isCountedAtIndex = (row, index) => Number.isInteger(index) && index >= 0 && index < row.length && isCountedValue(row[index]);
+  const getMetaIndex = (key) => {
+    const raw = countMeta && countMeta[key];
+    if (raw === null || raw === undefined || raw === "") return -1;
+    const index = Number(raw);
+    return Number.isInteger(index) ? index : -1;
+  };
+  const count1Index = getMetaIndex("count1Index");
+  const count2Index = getMetaIndex("count2Index");
+  const legacyIndex = getMetaIndex("legacyIndex");
+  const isCurrentRoundCounted = (row) => {
+    if (currentCountProfile === 2) return isCountedAtIndex(row, count2Index >= 0 ? count2Index : countIndex);
+    return isCountedAtIndex(row, count1Index >= 0 ? count1Index : countIndex) || isCountedAtIndex(row, legacyIndex);
+  };
+  const hasInspectionEvidence = (row) => {
+    const status = String(row[6] || "").trim();
+    return !!status || isCountedAtIndex(row, count1Index) || isCountedAtIndex(row, count2Index) || isCountedAtIndex(row, legacyIndex) || isCountedAtIndex(row, countIndex);
   };
   const warehouses = new Map();
   rows.forEach(row => {
-    const warehouseName = normalizeWarehouseDisplay(row[4]);
+    const normalizedWarehouse = normalizeWarehouseDisplay(row[4]);
+    const warehouseName = hasInspectionEvidence(row) ? normalizedWarehouse : "Diff";
     const rawWarehouseName = normalizeGroupName(row[4], "ไม่ระบุคลัง");
     const zoneName = normalizeGroupName(row[3], "ไม่ระบุโซน");
-    const counted = countIndex >= 0 && isCountedValue(row[countIndex]);
+    const counted = isCurrentRoundCounted(row);
     const warehouse = warehouses.get(warehouseName) || { name: warehouseName, total: 0, checked: 0, zones: new Map(), sources: new Map() };
     const zone = warehouse.zones.get(zoneName) || { name: zoneName, total: 0, checked: 0 };
     const source = warehouse.sources.get(rawWarehouseName) || { name: rawWarehouseName, total: 0, checked: 0 };
@@ -439,7 +523,11 @@ function buildWarehouseZoneOverview(rows, countIndex) {
         .map(zone => ({ ...zone, pending: Math.max(0, zone.total - zone.checked) }))
         .sort((a, b) => b.pending - a.pending || a.name.localeCompare(b.name, "th"))
     }))
-    .sort((a, b) => warehouseOrder.indexOf(a.name) - warehouseOrder.indexOf(b.name));
+    .sort((a, b) => {
+      const ai = warehouseOrder.indexOf(a.name);
+      const bi = warehouseOrder.indexOf(b.name);
+      return (ai < 0 ? 999 : ai) - (bi < 0 ? 999 : bi);
+    });
 }
 
 function renderWarehouseZoneOverview(containerId, rows) {
@@ -453,12 +541,13 @@ function renderWarehouseZoneOverview(containerId, rows) {
   el.innerHTML = rows.map((warehouse, index) => {
     const pct = warehouse.total > 0 ? Math.round((warehouse.checked / warehouse.total) * 100) : 0;
     const isDiff = warehouse.name === "Diff";
+    const warehouseClass = `warehouse-card-${String(warehouse.name || "unknown").trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "") || "unknown"}`;
     return `
-      <div class="overview-list-card warehouse-card" onclick="openWarehouseOverviewModal(${index})">
+      <div class="overview-list-card warehouse-card ${warehouseClass}" onclick="openWarehouseOverviewModal(${index})">
         <div class="overview-list-main">
           <div>
             <div class="overview-list-title">${escHtml(warehouse.name)}</div>
-            <div class="overview-list-subtitle">${isDiff ? "Needs warehouse/zone grouping" : "Click for zone details"}</div>
+            <div class="overview-list-subtitle">${isDiff ? "No inspection evidence or unrecognized warehouse" : "Click for zone details"}</div>
           </div>
           <div class="overview-list-metrics">
             <div class="metric-pill"><span>Total</span><strong>${warehouse.total.toLocaleString()}</strong></div>
@@ -552,8 +641,9 @@ function renderTypeOverview(containerId, rows) {
   }
   el.innerHTML = items.map((item, index) => {
     const pending = Math.max(0, item.total - item.checked);
+    const typeClass = `type-card-${item.code.toLowerCase().replace(/[^a-z0-9_-]/g, "")}`;
     return `
-      <div class="overview-list-card type-row" onclick="openTypeOverviewModal(${index})" style="cursor:pointer;">
+      <div class="overview-list-card type-row ${typeClass}" onclick="openTypeOverviewModal(${index})" style="cursor:pointer;">
         <div class="overview-list-main">
           <div class="type-title">
             <div class="type-code cat-tag ${escHtml(item.code.toLowerCase().replace(/[^a-z0-9_-]/g, ""))}">${escHtml(item.code)}</div>
@@ -577,7 +667,7 @@ function renderTypeOverview(containerId, rows) {
 }
 
 function buildTypePendingBreakdown(typeCode) {
-  const countIndex = getProfileCountIndex(currentCountProfile);
+  const countIndex = getReliableProfileCountIndex(currentCountProfile);
   const map = new Map();
   allAssets.forEach(row => {
     const code = String(row[2] || "UNKNOWN").trim().toUpperCase() || "UNKNOWN";
@@ -658,7 +748,7 @@ function renderUnregWarehouseZoneOverview(containerId, rows) {
   const el = document.getElementById(containerId);
   if (!el) return;
   if (!rows.length) {
-    el.innerHTML = '<div style="color:var(--text-muted);font-weight:700;">No unregistered warehouse data</div>';
+    el.innerHTML = '<div style="color:var(--text-muted);font-weight:700;">No unmatched asset warehouse data</div>';
     return;
   }
   el.innerHTML = rows.map((warehouse) => `
@@ -724,17 +814,26 @@ function renderUnregTypeOverview(containerId, rows) {
   }).join("");
 }
 
-function renderOverview() {
+function renderOverview(options = {}) {
   if (!Array.isArray(allAssets)) return;
-  const countIndex = getProfileCountIndex(currentCountProfile);
+  const countIndex = getReliableProfileCountIndex(currentCountProfile);
   const totalAssets = allAssets.length;
-  const checked = countIndex >= 0 ? allAssets.filter(row => isCountedValue(row[countIndex])).length : 0;
+  const fallbackChecked = currentCountProfile === 2 ? Number(dashboardSummary && dashboardSummary.checked2) : Number(dashboardSummary && dashboardSummary.checked);
+  const checked = countIndex >= 0 ? allAssets.filter(row => isCountedValue(row[countIndex])).length : (Number.isFinite(fallbackChecked) ? fallbackChecked : 0);
   const pending = Math.max(0, totalAssets - checked);
   const pct = totalAssets > 0 ? Math.round((checked / totalAssets) * 100) : 0;
-  document.getElementById("dash-total").textContent = totalAssets.toLocaleString();
-  document.getElementById("dash-checked").textContent = checked.toLocaleString();
-  document.getElementById("dash-pending-complete").textContent = pending.toLocaleString();
-  document.getElementById("dash-month-label").textContent = `รายการที่ตรวจสอบแล้ว (${currentCountProfile === 1 ? "Count 1" : "Count 2"})`;
+  if (countIndex >= 0 || !options.preserveSummaryOnMissingCount) {
+    document.getElementById("dash-total").textContent = totalAssets.toLocaleString();
+    document.getElementById("dash-checked").textContent = checked.toLocaleString();
+    document.getElementById("dash-pending-complete").textContent = pending.toLocaleString();
+  }
+  const roundName = currentCountProfile === 2
+    ? (countMeta && countMeta.count2Name)
+    : (countMeta && (countMeta.count1Name || countMeta.legacyName));
+  const activePeriodLabel = countMeta && (countMeta.activeCountPeriodLabel || countMeta.activeCountPeriod);
+  document.getElementById("dash-month-label").textContent = roundName
+    ? `รอบที่แสดง: ${roundName}`
+    : `รอบที่แสดง: ${activePeriodLabel || "Latest"} (${currentCountProfile === 1 ? "Count 1" : "Count 2"})`;
   document.getElementById("dash-pct-complete").textContent = pct + "%";
   document.getElementById("dash-pct-pending-complete").textContent = (100 - pct) + "%";
   const circumference = 2 * Math.PI * 26;
@@ -742,8 +841,12 @@ function renderOverview() {
   if (circle) circle.style.strokeDashoffset = circumference - (pct / 100) * circumference;
   const pendingCircle = document.getElementById("pending-circle");
   if (pendingCircle) pendingCircle.style.strokeDashoffset = circumference - ((100 - pct) / 100) * circumference;
-  renderWarehouseZoneOverview("warehouse-zone-overview", buildWarehouseZoneOverview(allAssets, countIndex));
+  const warehouseRows = Array.isArray(warehouseOverviewRows) && warehouseOverviewRows.length
+    ? warehouseOverviewRows
+    : buildWarehouseZoneOverview(allAssets, countIndex);
+  renderWarehouseZoneOverview("warehouse-zone-overview", warehouseRows);
   renderTypeOverview("type-overview", buildBreakdown(allAssets, 2, countIndex));
+  updateCountPeriodWarning();
   
   if (Array.isArray(allUnregAssets)) {
     renderUnregWarehouseZoneOverview("unreg-warehouse-zone-overview", buildUnregWarehouseZoneOverview(allUnregAssets));
@@ -1379,7 +1482,7 @@ function viewUnregAssetDetail(tempId) {
   document.getElementById("modal-acq-date").textContent      = formatDateTime(row[6]); 
   document.getElementById("modal-status").innerHTML          = `<span class="status-badge warn" style="background:#fef3c7;color:#b45309;padding:4px 8px;border-radius:6px;font-size:11px;font-weight:700;">นอกระบบ</span>`;
   document.getElementById("modal-last-scan").textContent     = formatDateTime(row[6]);
-  document.getElementById("modal-last-result").textContent   = "Unregistered Asset";
+  document.getElementById("modal-last-result").textContent   = "Unmatched Asset";
   document.getElementById("modal-save-duration").textContent = formatDurationHms(getUnregDurationMs(tempId));
 
   let remarkText = row[5] || "";

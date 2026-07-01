@@ -140,10 +140,20 @@ function getDirectDriveImageHtml(link) {
   return `<a href="${link}" target="_blank" style="display:inline-flex;align-items:center;gap:6px;padding:10px 20px;background:var(--primary);color:white;border-radius:8px;text-decoration:none;font-weight:700;font-size:13px;width:100%;justify-content:center;box-shadow:0 4px 12px rgba(37,99,235,0.2);">📸 ดูรูปภาพแนบสติ๊กเกอร์เสียหาย</a>`;
 }
 
+function setDetailModalSource(type) {
+  const badge = document.getElementById("modal-source-badge");
+  if (!badge) return;
+
+  const isUnmatched = type === "unmatched";
+  badge.textContent = isUnmatched ? "Unmatched Assets" : "Asset Master";
+  badge.className = "modal-source-badge " + (isUnmatched ? "unmatched" : "asset");
+}
+
 function viewAssetDetail(assetNo) {
   const row = allAssets.find(r => String(r[0]).trim().toUpperCase() === String(assetNo).trim().toUpperCase());
   currentModalAssetNo = assetNo;
 
+  setDetailModalSource("asset");
   document.getElementById("modal-asset-no").textContent     = assetNo;
   document.getElementById("modal-name").textContent          = row ? (row[1] || "-") : "-";
   document.getElementById("modal-category").innerHTML        = row ? `<span class="cat-tag">${escHtml(row[2] || "-")}</span>` : "-";
@@ -216,6 +226,7 @@ function viewUnregAssetDetail(tempId) {
 
   currentModalAssetNo = tempId;
 
+  setDetailModalSource("unmatched");
   document.getElementById("modal-asset-no").textContent     = tempId;
   document.getElementById("modal-name").textContent          = row[1] || "-";
   document.getElementById("modal-category").innerHTML        = `<span class="cat-tag" style="background:#fef3c7;color:#b45309;">${escHtml(row[2] || "-")}</span>`;
@@ -224,7 +235,7 @@ function viewUnregAssetDetail(tempId) {
   document.getElementById("modal-acq-date").textContent      = formatDateTime(row[6]); 
   document.getElementById("modal-status").innerHTML          = `<span class="status-badge warn">นอกระบบ</span>`;
   document.getElementById("modal-last-scan").textContent     = formatDateTime(row[6]);
-  document.getElementById("modal-last-result").textContent   = "Unregistered Asset";
+  document.getElementById("modal-last-result").textContent   = "Unmatched Assets / สินค้านอกระบบ";
 
   let remarkText = row[5] || "";
   let imageLink = row[7] || "";
@@ -390,10 +401,85 @@ function closeInspectSearchModal() {
   document.body.style.overflow = "";
 }
 
+function hideInspectSearchKeyboard() {
+  const inspectInput = document.getElementById("inspect-search-input");
+  if (inspectInput) inspectInput.blur();
+
+  const activeEl = document.activeElement;
+  if (activeEl && ["INPUT", "TEXTAREA", "SELECT"].includes(activeEl.tagName)) {
+    activeEl.blur();
+  }
+}
+
+function cacheInspectLookupResult(lookupData) {
+  if (!lookupData || !lookupData.found) return;
+
+  const assetNo = String(lookupData.assetNo || "").trim().toUpperCase();
+  if (!assetNo) return;
+
+  if (lookupData.isUnregistered) {
+    const unregRowData = [
+      lookupData.assetNo,
+      lookupData.assetName || "-",
+      lookupData.category || "-",
+      lookupData.warehouse || "-",
+      lookupData.area || "-",
+      lookupData.remark || "",
+      lookupData.dateAdded || lookupData.lastScan || new Date().toISOString(),
+      lookupData.imageUrl || "",
+      lookupData.unregStatus || "Pending",
+      lookupData.assetStatus || ""
+    ];
+    const existsIndex = allUnregAssets.findIndex(r => String(r[0]).trim().toUpperCase() === assetNo);
+    if (existsIndex > -1) {
+      allUnregAssets[existsIndex] = unregRowData;
+    } else {
+      allUnregAssets.push(unregRowData);
+    }
+    return;
+  }
+
+  const rowData = [
+    lookupData.assetNo,
+    lookupData.assetName || "-",
+    lookupData.category || "-",
+    lookupData.area || "-",
+    lookupData.warehouse || "-",
+    lookupData.acquisitionDate || "",
+    lookupData.assetStatus || "",
+    lookupData.lastScan || "",
+    lookupData.lastResult || "",
+    lookupData.remark || "",
+    lookupData.imageUrl || ""
+  ];
+  const existsIndex = allAssets.findIndex(r => String(r[0]).trim().toUpperCase() === assetNo);
+  if (existsIndex > -1) {
+    allAssets[existsIndex] = rowData;
+  } else {
+    allAssets.push(rowData);
+  }
+}
+
 async function performInspectSearch() {
   const assetNoInput = document.getElementById("inspect-search-input").value.trim().toUpperCase();
   if (!assetNoInput) {
     showInspectError("กรุณากรอกรหัสทรัพย์สิน");
+    return;
+  }
+
+  hideInspectSearchKeyboard();
+
+  const localAsset = allAssets.find(r => String(r[0]).trim().toUpperCase() === assetNoInput);
+  if (localAsset) {
+    closeInspectSearchModal();
+    viewAssetDetail(assetNoInput);
+    return;
+  }
+
+  const localUnregAsset = allUnregAssets.find(r => String(r[0]).trim().toUpperCase() === assetNoInput);
+  if (localUnregAsset) {
+    closeInspectSearchModal();
+    viewUnregAssetDetail(assetNoInput);
     return;
   }
   
@@ -406,54 +492,17 @@ async function performInspectSearch() {
     showInspectLoading(false);
     
     if (lookupData && lookupData.status === "success" && lookupData.found) {
+      cacheInspectLookupResult(lookupData);
+
       if (lookupData.isUnregistered) {
-        // Cache the lookup results into allUnregAssets so viewUnregAssetDetail can read them
-        const unregRowData = [
-          lookupData.assetNo,
-          lookupData.assetName || "-",
-          lookupData.category || "-",
-          lookupData.warehouse || "-",
-          lookupData.area || "-",
-          lookupData.remark || "",
-          lookupData.dateAdded || lookupData.lastScan || new Date().toISOString(),
-          lookupData.imageUrl || "",
-          lookupData.unregStatus || "Pending",
-          lookupData.assetStatus || ""
-        ];
-        const existsIndex = allUnregAssets.findIndex(r => String(r[0]).trim().toUpperCase() === lookupData.assetNo.toUpperCase());
-        if (existsIndex > -1) {
-          allUnregAssets[existsIndex] = unregRowData;
-        } else {
-          allUnregAssets.push(unregRowData);
-        }
         closeInspectSearchModal();
         viewUnregAssetDetail(lookupData.assetNo);
       } else {
-        // Cache the lookup results into allAssets so viewAssetDetail can read them
-        const rowData = [
-          lookupData.assetNo,
-          lookupData.assetName || "-",
-          lookupData.category || "-",
-          lookupData.area || "-",
-          lookupData.warehouse || "-",
-          lookupData.acquisitionDate || "",
-          lookupData.assetStatus || "",
-          lookupData.lastScan || "",
-          lookupData.lastResult || "",
-          lookupData.remark || "",
-          lookupData.imageUrl || ""
-        ];
-        const existsIndex = allAssets.findIndex(r => String(r[0]).trim().toUpperCase() === lookupData.assetNo.toUpperCase());
-        if (existsIndex > -1) {
-          allAssets[existsIndex] = rowData;
-        } else {
-          allAssets.push(rowData);
-        }
         closeInspectSearchModal();
         viewAssetDetail(lookupData.assetNo);
       }
     } else {
-      showInspectError("ไม่พบรหัสทรัพย์สินนี้ในระบบ");
+      showInspectError("ไม่พบรหัสนี้ทั้งในระบบและนอกระบบ");
     }
   } catch (err) {
     showInspectLoading(false);

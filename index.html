@@ -233,6 +233,7 @@
         <div>
           <div class="modal-title">รายละเอียดทรัพย์สิน</div>
           <div class="modal-subtitle" id="modal-asset-no">-</div>
+          <div id="modal-source-badge" class="modal-source-badge asset">Asset Master</div>
         </div>
       </div>
       <button class="modal-close" onclick="closeModal()">✕</button>
@@ -301,15 +302,15 @@
         <span class="modal-icon">🔍</span>
         <div>
           <div class="modal-title" style="color: var(--text-dim);">ตรวจสอบรายละเอียดทรัพย์สิน</div>
-          <div class="modal-subtitle" style="color:var(--primary);font-size:14px;font-weight:800;margin-top:2px;">พิมพ์รหัสทรัพย์สินเพื่อค้นหา</div>
+          <div class="modal-subtitle" style="color:var(--primary);font-size:14px;font-weight:800;margin-top:2px;">ค้นหาได้ทั้งทรัพย์สินในระบบและนอกระบบ</div>
         </div>
       </div>
       <button class="modal-close" onclick="closeInspectSearchModal()">✕</button>
     </div>
     <div class="modal-body" style="padding: 20px; font-size: 14px;">
       <div class="form-group" style="margin-bottom:0;">
-        <label for="inspect-search-input" style="font-weight:700; margin-bottom:8px; display:block; font-size:14px;">รหัสทรัพย์สิน (Asset No)</label>
-        <input type="text" id="inspect-search-input" placeholder="พิมพ์รหัส เช่น TOL001453" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-size:16px; font-weight:600; text-transform:uppercase; box-sizing: border-box;" onkeydown="if(event.key==='Enter') performInspectSearch()">
+        <label for="inspect-search-input" style="font-weight:700; margin-bottom:8px; display:block; font-size:14px;">รหัสทรัพย์สิน / รหัส TEMP</label>
+        <input type="text" id="inspect-search-input" placeholder="พิมพ์รหัส เช่น TOL001453 หรือ TEMP0001" style="width:100%; padding:12px; border:1px solid var(--border); border-radius:8px; font-size:16px; font-weight:600; text-transform:uppercase; box-sizing: border-box;" onkeydown="if(event.key==='Enter') performInspectSearch()">
       </div>
       <div id="inspect-search-loading" style="display:none; text-align:center; margin-top:15px; color:var(--primary); font-weight:700; font-size:14px;">
         <div class="spinner" style="margin: 0 auto 8px auto; width:24px; height:24px; border: 3px solid var(--border); border-top: 3px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite;"></div>

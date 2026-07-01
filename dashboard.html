@@ -35,7 +35,7 @@
     <div class="sidebar-label">Data Scope</div>
     <div class="pillar-nav">
       <button class="pillar-btn active" id="pillar-count" onclick="setPillar('count')">Master Assets</button>
-      <button class="pillar-btn" id="pillar-unreg" onclick="setPillar('unreg')">New Items</button>
+      <button class="pillar-btn" id="pillar-unreg" onclick="setPillar('unreg')">Unmatched Assets</button>
     </div>
   </div>
   <div class="sidebar-section">
@@ -53,14 +53,6 @@
       <button class="control-btn control-btn-primary" onclick="enterPresentation()" id="present-btn">Presentation</button>
     </div>
   </div>
-  <div class="sidebar-section auth-bottom">
-    <div class="sidebar-label">Login</div>
-    <div class="auth-panel" id="auth-panel">
-      <span id="auth-status" style="color:var(--text-dim); font-weight:600;">Not signed in</span>
-      <button class="auth-btn login" id="auth-login-btn" onclick="openApproveLogin()">Approval login</button>
-      <button class="auth-btn logout hidden" id="auth-logout-btn" onclick="logoutApprove()">Logout</button>
-    </div>
-  </div>
 </div>
 <div class="main-content">
   <header class="dashboard-command-header">
@@ -73,6 +65,15 @@
         <span class="meta-dot"></span>
         <span id="last-sync-text">Waiting for sync</span>
       </div>
+      <div class="auth-panel header-auth-panel" id="auth-panel">
+        <span id="auth-status" style="color:var(--text-dim); font-weight:600;">Not signed in</span>
+        <button class="auth-btn login" id="auth-login-btn" onclick="openApproveLogin()">Approval login</button>
+        <button class="auth-btn logout hidden" id="auth-logout-btn" onclick="logoutApprove()">Logout</button>
+      </div>
+      <select id="count-period-select" class="count-period-select" onchange="setCountPeriod(this.value)" aria-label="Count month">
+        <option value="">Latest count month</option>
+      </select>
+      <button class="header-action-btn count-round-btn login-required-action locked-action" type="button" onclick="startNewCountRound()" title="Sign in before starting a new count round">เริ่มรอบนับใหม่</button>
       <button class="icon-action-btn" type="button" onclick="loadDashboard()" aria-label="Refresh data">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg>
       </button>
@@ -140,23 +141,23 @@
     <!-- SUMMARY CARDS FOR UNREG -->
   <div id="summary-unreg" class="summary-row hidden">
     <div class="summary-card red">
-      <div class="card-header-row"><div class="card-title" style="color:var(--danger);">Unregistered items pending approval</div></div>
+      <div class="card-header-row"><div class="card-title" style="color:var(--danger);">Unmatched Assets pending review</div></div>
       <div class="card-number" id="dash-pillar-unreg">-</div>
       <div class="card-footer">Items waiting to enter master records</div>
     </div>
     <div class="summary-card orange">
-      <div class="card-header-row"><div class="card-title" style="color:var(--warning);">Unregistered record time</div></div>
+      <div class="card-header-row"><div class="card-title" style="color:var(--warning);">Unmatched Assets record time</div></div>
       <div class="card-number" id="dash-unreg-duration">00:00:00</div>
-      <div class="card-footer">Total unregistered record time</div>
+      <div class="card-footer">Total unmatched asset record time</div>
     </div>
   </div>
   <div id="overview-panels-unreg" class="overview-grid projector-mode hidden">
     <div class="overview-panel">
-      <h3>Unregistered Warehouse and Zone: Pending Approval</h3>
+      <h3>Unmatched Assets Warehouse and Zone: Pending Review</h3>
       <div id="unreg-warehouse-zone-overview" class="warehouse-stack"></div>
     </div>
     <div class="overview-panel">
-      <h3>Unregistered Type: Pending Approval</h3>
+      <h3>Unmatched Assets Type: Pending Review</h3>
       <div id="unreg-type-overview" class="type-progress-list"></div>
     </div>
   </div>
@@ -243,7 +244,7 @@
   <!-- DATA TABLE UNREG -->
   <div class="table-container hidden" id="table-unreg-container">
     <div style="padding:15px; display:flex; justify-content:space-between; align-items:center; background:#f8fafc; border-bottom:1px solid var(--border);">
-      <b style="font-size:15px; color:var(--text);">Unregistered items pending approval</b>
+      <b style="font-size:15px; color:var(--text);">Unmatched Assets pending review</b>
       <button class="control-btn control-btn-success approve-action" onclick="confirmAllUnreg(this)">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
         Approve all
@@ -307,7 +308,7 @@
     <div class="modal-header">
       <div>
         <div id="warehouse-modal-title" style="font-size:18px;font-weight:900;">-</div>
-        <div id="warehouse-modal-summary" style="font-size:12px;color:var(--text-dim);font-weight:800;margin-top:3px;">-</div>
+        <div id="warehouse-modal-summary" style="font-size:12px;color:rgba(255,255,255,0.88);font-weight:800;margin-top:3px;">-</div>
       </div>
       <button class="modal-close" onclick="closeWarehouseOverviewModal()">✕</button>
     </div>
@@ -322,7 +323,7 @@
     <div class="modal-header">
       <div>
         <div id="type-modal-title" style="font-size:18px;font-weight:900;">-</div>
-        <div id="type-modal-summary" style="font-size:12px;color:var(--text-dim);font-weight:800;margin-top:3px;">-</div>
+        <div id="type-modal-summary" style="font-size:12px;color:rgba(255,255,255,0.88);font-weight:800;margin-top:3px;">-</div>
       </div>
       <button class="modal-close" onclick="closeTypeOverviewModal()">✕</button>
     </div>

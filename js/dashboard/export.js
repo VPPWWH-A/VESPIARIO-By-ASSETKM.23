@@ -165,228 +165,183 @@ function exportExcel() {
   XLSX.writeFile(wb, `Vespa_Assets_Report_${new Date().toISOString().split('T')[0]}.xlsx`);
 }
 
+function getCountSheetMetaIndex(key) {
+  const raw = countMeta && countMeta[key];
+  if (raw === null || raw === undefined || raw === "") return -1;
+  const index = Number(raw);
+  return Number.isInteger(index) ? index : -1;
+}
+
+function isCountSheetCountedAt(row, index) {
+  return Number.isInteger(index) && index >= 0 && index < row.length && isCountedValue(row[index]);
+}
+
+function getCountSheetState(row, roundNum) {
+  const countIndex = typeof getReliableProfileCountIndex === "function" ? getReliableProfileCountIndex(Number(roundNum)) : -1;
+  const count1Index = getCountSheetMetaIndex("count1Index");
+  const count2Index = getCountSheetMetaIndex("count2Index");
+  const legacyIndex = getCountSheetMetaIndex("legacyIndex");
+  const checked = String(roundNum) === "2"
+    ? isCountSheetCountedAt(row, count2Index >= 0 ? count2Index : countIndex)
+    : isCountSheetCountedAt(row, count1Index >= 0 ? count1Index : countIndex) || isCountSheetCountedAt(row, legacyIndex);
+  const hasEvidence = !!String(row[6] || "").trim() ||
+    isCountSheetCountedAt(row, count1Index) ||
+    isCountSheetCountedAt(row, count2Index) ||
+    isCountSheetCountedAt(row, legacyIndex) ||
+    isCountSheetCountedAt(row, countIndex);
+  return { checked, hasEvidence };
+}
+
+function normalizeCountSheetWarehouse(row) {
+  const rawWh = String((Array.isArray(row) ? row[4] : row) || "").trim();
+  const rawArea = String((Array.isArray(row) ? row[3] : "") || "").trim();
+  const whUpper = rawWh.toUpperCase();
+  const areaUpper = rawArea.toUpperCase();
+  const officeBAreas = [
+    "OFFICE CENTER",
+    "MEETING ROOM B1",
+    "MEETING ROOM B2",
+    "MEETING ROOM B3",
+    "โซนรับประทานอาหาร",
+    "LOCKER ROOM",
+    "ห้องประชุม B1",
+    "ห้องประชุม B2",
+    "ห้องประชุม B3",
+    "ห้องทำงาน WH.B"
+  ];
+
+  if (whUpper.includes("PDI")) return "PDIZONE";
+  if (whUpper.includes("WHD") || whUpper.includes("HR")) return "WHD+HR";
+  if (whUpper.includes("WH-A") || whUpper.includes("WAREHOUSE A") || whUpper.includes("WHA") || whUpper.includes("TRS")) {
+    if (rawArea.includes("โซน PDI") || areaUpper.includes("PDI")) return "PDIZONE";
+    return "WAREHOUSE A+TRS";
+  }
+  if (whUpper.includes("WH-B") || whUpper.includes("WAREHOUSE B") || whUpper.includes("WHB")) {
+    const isOfficeB = rawArea.includes("ห้องทำงาน WH.B") ||
+      areaUpper.includes("OFFICE B") ||
+      areaUpper.includes("OFFICE WH.B") ||
+      areaUpper.includes("OFFICE WH B") ||
+      officeBAreas.includes(rawArea) ||
+      officeBAreas.includes(areaUpper);
+    return isOfficeB ? "OFFICE B" : "WAREHOUSE B";
+  }
+  if (whUpper.includes("OFFICE")) return "OFFICE A";
+  if (whUpper.includes("KM23") || whUpper.includes("KM.23")) return "KM23";
+  return "Diff";
+}
+
 function exportCountSheet(roundNum = 1) {
   try {
-    if (allAssets.length === 0) {
+    if (!Array.isArray(allAssets) || allAssets.length === 0) {
       alert("กรุณาโหลดข้อมูลก่อน");
       return;
     }
 
-    // 1. แยกกลุ่มข้อมูลทรัพย์สินตามคลังหลัก
+    const roundLabel = String(roundNum) === "2" ? "Count 2" : "Count 1";
+    const roundName = String(roundNum) === "2"
+      ? (countMeta && countMeta.count2Name)
+      : (countMeta && (countMeta.count1Name || countMeta.legacyName));
+    const periodLabel = (countMeta && (countMeta.activeCountPeriodLabel || countMeta.activeCountPeriod)) || "Latest";
+    const warehouseOrder = ["PDIZONE", "WAREHOUSE A+TRS", "WAREHOUSE B", "OFFICE A", "OFFICE B", "WHD+HR", "KM23", "Diff"];
     const warehouseGroups = {};
+
     allAssets.forEach(row => {
-      const rawWh = String(row[4] || "ไม่ระบุคลัง").trim().toUpperCase();
-      const rawArea = String(row[3] || "").trim();
-      const rawAreaUpper = rawArea.toUpperCase();
-      let whGroup = "Diff";
-      if (rawWh.includes("PDI")) {
-        whGroup = "PDIZONE";
-      } else if (rawWh.includes("WHD") || rawWh.includes("HR")) {
-        whGroup = "WHD+HR";
-      } else if (rawWh.includes("WH-A") || rawWh.includes("WAREHOUSE A") || rawWh.includes("WHA") || rawWh.includes("TRS")) {
-        if (rawArea.includes("โซน PDI") || rawAreaUpper.includes("PDI")) {
-          whGroup = "PDIZONE";
-        } else {
-          whGroup = "WAREHOUSE A+TRS";
-        }
-      } else if (rawWh.includes("WH-B") || rawWh.includes("WAREHOUSE B") || rawWh.includes("WHB")) {
-        const isOfficeB = rawArea.includes("ห้องทำงาน WH.B") || 
-                          rawAreaUpper.includes("OFFICE B") || 
-                          rawAreaUpper.includes("OFFICE WH.B") || 
-                          rawAreaUpper.includes("OFFICE WH B") ||
-                          ["OFFICE CENTER", "MEETING ROOM B1", "MEETING ROOM B2", "MEETING ROOM B3", "โซนรับประทานอาหาร", "LOCKER ROOM", "ห้องประชุม B1", "ห้องประชุม B2", "ห้องประชุม B3", "ห้องทำงาน WH.B"].includes(rawAreaUpper);
-        if (isOfficeB) {
-          whGroup = "OFFICE B";
-        } else {
-          whGroup = "WAREHOUSE B";
-        }
-      } else if (rawWh.includes("OFFICE")) {
-        whGroup = "OFFICE A";
-      }
-      
+      const state = getCountSheetState(row, roundNum);
+      const normalizedWarehouse = normalizeCountSheetWarehouse(row);
+      const whGroup = state.hasEvidence ? normalizedWarehouse : "Diff";
       if (!warehouseGroups[whGroup]) warehouseGroups[whGroup] = [];
-      warehouseGroups[whGroup].push(row);
+      warehouseGroups[whGroup].push({ row, checked: state.checked });
     });
 
     const wb = XLSX.utils.book_new();
+    warehouseOrder
+      .filter(whName => Array.isArray(warehouseGroups[whName]) && warehouseGroups[whName].length)
+      .forEach(whName => {
+        const groupRows = warehouseGroups[whName];
+        groupRows.sort((a, b) => {
+          const rowA = a.row;
+          const rowB = b.row;
+          const areaCompare = String(rowA[3] || "").localeCompare(String(rowB[3] || ""), "th");
+          if (areaCompare !== 0) return areaCompare;
+          const catCompare = String(rowA[2] || "").localeCompare(String(rowB[2] || ""), "th");
+          if (catCompare !== 0) return catCompare;
+          return String(rowA[0] || "").localeCompare(String(rowB[0] || ""), "th");
+        });
 
-    // 2. สร้างชีตแยกตามคลัง
-    Object.keys(warehouseGroups).forEach(whName => {
-      const groupRows = warehouseGroups[whName];
-      // เรียงตาม: พื้นที่ย่อย --> หมวดหมู่ --> สถานะระบบ เพื่อความสะดวกในการเดินนับตรวจงาน
-      groupRows.sort((a, b) => {
-        const areaA = String(a[3] || "");
-        const areaB = String(b[3] || "");
-        const areaCompare = areaA.localeCompare(areaB, "th");
-        if (areaCompare !== 0) return areaCompare;
+        const checkedTotal = groupRows.filter(item => item.checked).length;
+        const leftTotal = Math.max(0, groupRows.length - checkedTotal);
+        const sheetData = [
+          [`ใบตรวจนับทรัพย์สิน (${roundLabel}) - คลัง: ${whName}`],
+          [`รอบที่แสดง: ${roundName || `${periodLabel} ${roundLabel}`} | Total ${groupRows.length} | Counted ${checkedTotal} | Left ${leftTotal}`],
+          ["", "", "", "", "", "ทีม___________ : _________ / _________ / _________"],
+          ["ลำดับ", "รหัสทรัพย์สิน", "ชื่อทรัพย์สิน / รายละเอียด", "พื้นที่ย่อย", "สถานะระบบ", "คลังคนที่ 1", "คลังคนที่ 2", "บัญชี", "ผลการตรวจนับ / หมายเหตุ"]
+        ];
 
-        const catA = String(a[2] || "");
-        const catB = String(b[2] || "");
-        const catCompare = catA.localeCompare(catB, "th");
-        if (catCompare !== 0) return catCompare;
+        groupRows.forEach((item, rIdx) => {
+          const row = item.row;
+          sheetData.push([
+            rIdx + 1,
+            row[0] || "",
+            row[1] || "",
+            row[3] || "",
+            row[6] || "Active",
+            "",
+            "",
+            "",
+            item.checked ? "ตรวจแล้วในรอบที่เลือก" : ""
+          ]);
+        });
 
-        const statusA = String(a[6] || "");
-        const statusB = String(b[6] || "");
-        const statusCompare = statusA.localeCompare(statusB, "th");
-        if (statusCompare !== 0) return statusCompare;
+        const ws = XLSX.utils.aoa_to_sheet(sheetData);
+        ws["!cols"] = [
+          { wch: 6 },
+          { wch: 14 },
+          { wch: 38 },
+          { wch: 18 },
+          { wch: 12 },
+          { wch: 12 },
+          { wch: 12 },
+          { wch: 12 },
+          { wch: 24 }
+        ];
+        ws["!merges"] = [
+          { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } },
+          { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } },
+          { s: { r: 2, c: 5 }, e: { r: 2, c: 8 } }
+        ];
 
-        return String(a[0]).localeCompare(String(b[0]));
-      });      
-      const sheetData = [];
-
-      // หัวข้อเอกสาร
-      sheetData.push([`ใบตรวจนับทรัพย์สิน (COUNT SHEET ${roundNum}) - คลัง: ${whName.toUpperCase()}`]);
-      sheetData.push([`พิมพ์เมื่อวันที่: ${new Date().toLocaleDateString("th-TH")} | ผู้ตรวจสอบ: คลัง 2 คน, บัญชี 1 คน`]);
-      // ข้อมูลทีมขวาบนของตาราง
-      sheetData.push(["", "", "", "", "", `ทีม___________ : _________ / _________ / _________`]);
-
-      // Headers ตารางการนับ
-      const tableHeaders = [
-        "ลำดับ",
-        "รหัสทรัพย์สิน", 
-        "ชื่อทรัพย์สิน / รายละเอียด", 
-        "พื้นที่ย่อย", 
-        "สถานะระบบ", 
-        "คลังคนที่ 1", 
-        "คลังคนที่ 2", 
-        "บัญชี", 
-        "ผลการตรวจนับ / หมายเหตุ"
-      ];
-      sheetData.push(tableHeaders);
-
-      // เติมข้อมูลลงตาราง
-      groupRows.forEach((row, rIdx) => {
-        sheetData.push([
-          rIdx + 1, // ลำดับ
-          row[0] || "", // รหัสทรัพย์สิน
-          row[1] || "", // ชื่อทรัพย์สิน
-          row[3] || "", // พื้นที่ย่อย
-          row[6] || "Active", // สถานะระบบ
-          "", // คลังคนที่ 1 (ว่างไว้เขียนมือ)
-          "", // คลังคนที่ 2 (ว่างไว้เขียนมือ)
-          "", // บัญชี (ว่างไว้เขียนมือ)
-          row[8] === "Count" || row[8] === "Checked" ? "✓ ตรวจแล้วในระบบ" : "" // หมายเหตุเดิม
-        ]);
-      });
-
-      const ws = XLSX.utils.aoa_to_sheet(sheetData);
-
-      // กำหนดความกว้างของคอลัมน์ให้อ่านง่ายเหมาะสำหรับพิมพ์ A4 ขาวดำ
-      ws["!cols"] = [
-        { wch: 6 },  // ลำดับ
-        { wch: 14 }, // รหัสทรัพย์สิน
-        { wch: 38 }, // รายละเอียดสินค้า
-        { wch: 14 }, // พื้นที่ย่อย
-        { wch: 11 }, // สถานะระบบ
-        { wch: 12 }, // คลังคนที่ 1
-        { wch: 12 }, // คลังคนที่ 2
-        { wch: 12 }, // บัญชี
-        { wch: 22 }  // หมายเหตุ
-      ];
-
-      // ตั้งความสูงของแถว (Row Heights) แบบกระชับ
-      const wsRows = [];
-      for (let i = 0; i < sheetData.length; i++) {
-        if (i === 0) {
-          wsRows.push({ hpt: 25 }); // หัวข้อหลัก & ทีม
-        } else if (i === 1) {
-          wsRows.push({ hpt: 18 }); // พิมพ์เมื่อวันที่
-        } else if (i === 2) {
-          wsRows.push({ hpt: 10 }); // แถวว่าง
-        } else if (i === 3) {
-          wsRows.push({ hpt: 24 }); // Header ตาราง
-        } else {
-          wsRows.push({ hpt: 20 }); // แถวข้อมูลตาราง
-        }
-      }
-      ws["!rows"] = wsRows;
-
-      // ตกแต่งสไตล์แบบ Gray-scale คอนทราสต์สูง เหมาะสำหรับการพิมพ์ขาวดำ
-      try {
-        if (ws['!ref']) {
-          const range = XLSX.utils.decode_range(ws['!ref']);
-          const tableHeaderRow = 3;
-          const lastDataRow = range.e.r;
-
-          for (let R = range.s.r; R <= range.e.r; ++R) {
-            for (let C = range.s.c; C <= range.e.c; ++C) {
-              const cellRef = XLSX.utils.encode_cell({ c: C, r: R });
-              if (!ws[cellRef]) ws[cellRef] = { t: "s", v: "" };
-
-              // สไตล์ตัวอักษรพื้นฐาน
-              ws[cellRef].s = {
-                font: { name: "Tahoma", sz: 9 },
-                alignment: { vertical: "center", wrapText: true }
-              };
-
-              // ตกแต่งเส้นตารางข้อมูล
-              if (R >= tableHeaderRow && R <= lastDataRow) {
-                ws[cellRef].s.border = {
-                  top: { style: "thin", color: { rgb: "000000" } },
-                  bottom: { style: "thin", color: { rgb: "000000" } },
-                  left: { style: "thin", color: { rgb: "000000" } },
-                  right: { style: "thin", color: { rgb: "000000" } }
+        try {
+          if (ws["!ref"]) {
+            const range = XLSX.utils.decode_range(ws["!ref"]);
+            for (let R = range.s.r; R <= range.e.r; ++R) {
+              for (let C = range.s.c; C <= range.e.c; ++C) {
+                const cellRef = XLSX.utils.encode_cell({ c: C, r: R });
+                if (!ws[cellRef]) ws[cellRef] = { t: "s", v: "" };
+                ws[cellRef].s = {
+                  font: { name: "Tahoma", sz: R === 0 ? 12 : 9, bold: R <= 3 },
+                  alignment: { vertical: "center", wrapText: true, horizontal: (C === 0 || C >= 5 || R <= 3) ? "center" : "left" },
+                  border: R >= 3 ? {
+                    top: { style: "thin", color: { rgb: "000000" } },
+                    bottom: { style: "thin", color: { rgb: "000000" } },
+                    left: { style: "thin", color: { rgb: "000000" } },
+                    right: { style: "thin", color: { rgb: "000000" } }
+                  } : undefined,
+                  fill: R === 3 ? { fgColor: { rgb: "CCCCCC" } } : (R > 3 && R % 2 === 0 ? { fgColor: { rgb: "F2F2F2" } } : undefined)
                 };
-                
-                // จัดช่องข้อมูลทั่วไปให้อยู่กลาง (ลำดับ, สถานะ, ตรวจมือ)
-                if (C === 0 || C === 4 || (C >= 5 && C <= 7)) {
-                  ws[cellRef].s.alignment.horizontal = "center";
-                }
-
-                // สลับสีแถวขาว-เทาอ่อน สำหรับพิมพ์ขาวดำ
-                if (R > tableHeaderRow) {
-                  if ((R - tableHeaderRow) % 2 === 0) {
-                    ws[cellRef].s.fill = { fgColor: { rgb: "F2F2F2" } }; // พื้นเทาอ่อนอ่านง่าย เขียนทับได้ง่าย
-                    ws[cellRef].s.font = { name: "Tahoma", sz: 9, color: { rgb: "000000" } }; // ตัวอักษรสีดำ
-                  } else {
-                    ws[cellRef].s.fill = { fgColor: { rgb: "FFFFFF" } }; // พื้นสีขาว
-                    ws[cellRef].s.font = { name: "Tahoma", sz: 9, color: { rgb: "000000" } }; // ตัวอักษรสีดำ
-                  }
-                }
-              }
-
-              // ตกแต่งหัวตาราง (Header Row)
-              if (R === tableHeaderRow) {
-                ws[cellRef].s.fill = { fgColor: { rgb: "CCCCCC" } }; // เทากลางเพื่อตัดสีดำ
-                ws[cellRef].s.font = { name: "Tahoma", sz: 9, bold: true, color: { rgb: "000000" } }; // ตัวอักษรดำเข้มคอนทราสต์สูง
-                ws[cellRef].s.alignment.horizontal = "center";
-              }
-              
-              // ตกแต่งชื่อหัวข้อหลักของชีต (Title Row)
-              if (R === 0) {
-                ws[cellRef].s.font = { name: "Tahoma", sz: 12, bold: true, color: { rgb: "000000" } };
-                ws[cellRef].s.alignment = { horizontal: "left", vertical: "center" };
-              }
-              
-              // ตกแต่งกล่องทีมขวาบนเหนือตาราง (Row index 2)
-              if (R === 2) {
-                if (C >= 5) {
-                  ws[cellRef].s.font = { name: "Tahoma", sz: 10, bold: true, color: { rgb: "000000" } };
-                  ws[cellRef].s.alignment = { horizontal: "right", vertical: "center" };
-                }
               }
             }
           }
-          
-          // ผสานเซลล์สำหรับหัวข้อและข้อมูลทีมขวาบน
-          ws["!merges"] = [
-            { s: { r: 0, c: 0 }, e: { r: 0, c: 8 } }, // ชื่อคลัง
-            { s: { r: 1, c: 0 }, e: { r: 1, c: 8 } }, // วันที่พิมพ์
-            { s: { r: 2, c: 5 }, e: { r: 2, c: 8 } }  // ข้อมูลทีม
-          ];
+        } catch (styleErr) {
+          console.warn("Styling Excel failed, exporting unstyled version:", styleErr);
         }
-      } catch(styleErr) {
-        console.warn("Styling Excel failed, exporting unstyled version:", styleErr);
-      }
 
-      // ป้องกันชื่อชีตมีอักขระพิเศษที่ Excel ห้ามใช้
-      const safeSheetName = whName.replace(/\//g, "-").replace(/[:\\\?\*\[\]]/g, "").substring(0, 30);
-      XLSX.utils.book_append_sheet(wb, ws, safeSheetName);
-    });
+        const safeSheetName = whName.replace(/\//g, "-").replace(/[:\\\?\*\[\]]/g, "").substring(0, 30);
+        XLSX.utils.book_append_sheet(wb, ws, safeSheetName);
+      });
 
-    XLSX.writeFile(wb, `Vespa_Print_CountSheet${roundNum}_${new Date().toISOString().split('T')[0]}.xlsx`);
+    XLSX.writeFile(wb, `Vespa_CountSheet_${roundLabel.replace(/\s+/g, "")}_${new Date().toISOString().split("T")[0]}.xlsx`);
   } catch (err) {
-    alert("❌ ไม่สามารถดาวน์โหลดได้เนื่องจาก: " + err.message);
+    alert("ไม่สามารถดาวน์โหลดได้เนื่องจาก: " + err.message);
     console.error(err);
   }
 }

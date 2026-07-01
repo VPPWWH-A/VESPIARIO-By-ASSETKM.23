@@ -1,9 +1,14 @@
 const API_URL = "https://script.google.com/macros/s/AKfycbzji7bEWa6sauFw1l21Su6GEDkYw7rAiBaiSzdnMuPHanmmW9atThQ0v9C8PsLvuYkxfw/exec";
 const API_SECRET = "VESPA2025SECRET";
+const DASHBOARD_LAST_GOOD_KEY = "__assetDashboardLastGood";
+let dashboardLoadInFlight = false;
 
 function apiUrl(params) {
   const url = new URL(API_URL); url.searchParams.set("key", API_SECRET);
-  for (const [k, v] of Object.entries(params)) { url.searchParams.set(k, v); }
+  for (const [k, v] of Object.entries(params)) {
+    if (v === undefined || v === null || v === "") continue;
+    url.searchParams.set(k, v);
+  }
   return url.toString();
 }
 
@@ -13,6 +18,99 @@ function fetchWithTimeout(url, options = {}, timeoutMs = 25000) {
   return fetch(url, { ...options, signal: controller.signal })
     .then(res => { clearTimeout(timer); return res; })
     .catch(err => { clearTimeout(timer); throw err; });
+}
+
+async function fetchJsonWithTimeout(url, options = {}, timeoutMs = 25000, label = "Request") {
+  const res = await fetchWithTimeout(url, options, timeoutMs);
+  const text = await res.text();
+  if (!res.ok) {
+    throw new Error(`${label} failed (${res.status}): ${text.slice(0, 160) || res.statusText}`);
+  }
+  try {
+    return JSON.parse(text);
+  } catch (err) {
+    throw new Error(`${label} returned invalid JSON: ${text.slice(0, 160)}`);
+  }
+}
+
+function setDashboardLoadError(message) {
+  const safeMessage = escHtml(message || "Cannot load dashboard data.");
+  const tableBody = document.getElementById("table-body");
+  if (tableBody) {
+    tableBody.innerHTML = `<div style="padding:40px; text-align:center; color:var(--danger); font-weight:700;">${safeMessage}</div>`;
+  }
+  const unregBody = document.getElementById("table-unreg-body");
+  if (unregBody) {
+    unregBody.innerHTML = `<div style="padding:40px; text-align:center; color:var(--danger); font-weight:700;">${safeMessage}</div>`;
+  }
+  const lastSyncText = document.getElementById("last-sync-text");
+  if (lastSyncText) lastSyncText.textContent = "Sync failed";
+}
+
+function applyDashboardData(summaryResponse, exportResponse, options = {}) {
+  dashboardSummary = summaryResponse && summaryResponse.summary ? summaryResponse.summary : null;
+  const r1 = summaryResponse || {};
+  const r2 = exportResponse || {};
+
+  if (dashboardSummary) {
+    const totalAssets = Number(dashboardSummary.totalAssets || 0);
+    const checked = currentCountProfile === 2 ? Number(dashboardSummary.checked2 || 0) : Number(dashboardSummary.checked || 0);
+    const pending = Math.max(0, totalAssets - checked);
+    document.getElementById("dash-total").textContent = totalAssets.toLocaleString();
+    document.getElementById("dash-checked").textContent = checked.toLocaleString();
+    document.getElementById("dash-pending-complete").textContent = pending.toLocaleString();
+    const pct = totalAssets > 0 ? Math.round((checked / totalAssets) * 100) : 0;
+    document.getElementById("dash-pct-complete").textContent = pct + "%";
+    document.getElementById("dash-pct-pending-complete").textContent = (100 - pct) + "%";
+  }
+
+  allAssets = Array.isArray(r2.assets) ? r2.assets : [];
+  allUnregAssets = Array.isArray(r2.unregAssets) ? r2.unregAssets : [];
+  exportHeaders = Array.isArray(r2.headers) ? r2.headers : [];
+  countMeta = r2.countMeta || r1.countMeta || {};
+  countPeriods = Array.isArray(r2.countPeriods) ? r2.countPeriods : (Array.isArray(r1.countPeriods) ? r1.countPeriods : (Array.isArray(countMeta.countPeriods) ? countMeta.countPeriods : []));
+  if (countMeta && countMeta.activeCountPeriod) currentCountPeriod = countMeta.activeCountPeriod;
+  if (typeof updateCountPeriodSelect === "function") updateCountPeriodSelect();
+  warehouseOverviewRows = Array.isArray(r2.warehouseOverviewRows) ? r2.warehouseOverviewRows : [];
+  scanDurationByAsset = r2.scanDurationByAsset || {};
+  unregAddedDurationByAsset = r2.unregAddedDurationByAsset || {};
+  scanDurationTotalMs = Object.values(scanDurationByAsset).reduce((sum, item) => sum + Number((item && item.durationMs) || 0), 0);
+
+  document.getElementById("dash-pillar-unreg").textContent = allUnregAssets.length.toLocaleString();
+  document.getElementById("dash-total-duration").textContent = formatDurationHms(scanDurationTotalMs);
+  document.getElementById("dash-unreg-duration").textContent = formatDurationHms(r2.unregAddedDurationTotalMs || 0);
+
+  const lastSyncText = document.getElementById("last-sync-text");
+  if (lastSyncText) {
+    const prefix = options.stale ? "Showing saved data from " : "Synced ";
+    lastSyncText.textContent = prefix + new Date(options.generatedAt || Date.now()).toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
+  }
+
+  renderOverview({ preserveSummaryOnMissingCount: true });
+  syncDashboardView();
+  updateFilterTabCounts();
+  filterTable();
+}
+
+function saveLastGoodDashboard(summaryResponse, exportResponse) {
+  try {
+    localStorage.setItem(DASHBOARD_LAST_GOOD_KEY, JSON.stringify({
+      savedAt: Date.now(),
+      summaryResponse,
+      exportResponse
+    }));
+  } catch (e) {}
+}
+
+function restoreLastGoodDashboard() {
+  try {
+    const cached = JSON.parse(localStorage.getItem(DASHBOARD_LAST_GOOD_KEY) || "null");
+    if (!cached || !cached.summaryResponse || !cached.exportResponse) return false;
+    applyDashboardData(cached.summaryResponse, cached.exportResponse, { stale: true, generatedAt: cached.savedAt });
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 async function submitApproveLogin() {
@@ -119,68 +217,66 @@ async function confirmAllUnreg(btn) {
 async function loadDashboard() {
   const refreshBtn = document.getElementById("refresh-btn");
   if (!refreshBtn) return;
-  refreshBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; animation: spin 1s linear infinite; display: inline-block;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> กำลังโหลด...`; refreshBtn.disabled = true;
+  if (dashboardLoadInFlight) return;
+  dashboardLoadInFlight = true;
+  refreshBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; animation: spin 1s linear infinite; display: inline-block;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Loading...`;
+  refreshBtn.disabled = true;
 
   try {
-    const r1 = await fetchWithTimeout(apiUrl({ action: "dashboard", fresh: "1", _: Date.now() }), {}, 15000)
-      .then(res => res.json())
-      .catch(() => null);
-    
-    if(r1 && r1.summary) {
-      const totalAssets = Number(r1.summary.totalAssets || 0);
-      const checked = Number(r1.summary.checked || 0);
-      const pending = Number(r1.summary.pending ?? Math.max(0, totalAssets - checked));
-      document.getElementById("dash-total").textContent = totalAssets.toLocaleString();
-      document.getElementById("dash-checked").textContent = checked.toLocaleString();
-      document.getElementById("dash-pending-complete").textContent = pending.toLocaleString();
-      let pct = Number(r1.summary.pct ?? (totalAssets > 0 ? Math.round((checked / totalAssets) * 100) : 0)) || 0;
-      pct = Math.max(0, Math.min(100, pct));
-      document.getElementById("dash-pct-complete").textContent = pct + "%";
-      document.getElementById("dash-pct-pending-complete").textContent = (100 - pct) + "%";
-      
-      // Update circular progress svg offset
-      const circle = document.getElementById("progress-circle");
-      if (circle) {
-        const circumference = 2 * Math.PI * 26; // 163.36
-        const offset = circumference - (pct / 100) * circumference;
-        circle.style.strokeDashoffset = offset;
-      }
-      const pendingCircle = document.getElementById("pending-circle");
-      if (pendingCircle) {
-        const circumference = 2 * Math.PI * 26;
-        const pendingPct = Math.max(0, 100 - pct);
-        pendingCircle.style.strokeDashoffset = circumference - (pendingPct / 100) * circumference;
-      }
-    } else {
-      throw new Error("ไม่สามารถอ่านข้อมูลสรุปจาก Server ได้");
+    const commonParams = { fresh: "1", countPeriod: currentCountPeriod, countRound: currentCountProfile, _: Date.now() };
+    const r1 = await fetchJsonWithTimeout(apiUrl({ action: "dashboard", ...commonParams }), {}, 20000, "Dashboard summary");
+    if (!r1 || !r1.summary) {
+      throw new Error(r1 && r1.message ? r1.message : "Cannot read dashboard summary from server.");
     }
 
     refreshBtn.innerHTML = `<span class="spinner-sm" style="margin-right:4px;"></span> Loading table...`;
-    const r2 = await fetchWithTimeout(apiUrl({ action: "export", fresh: "1", _: Date.now() }), {}, 25000)
-      .then(res => res.json())
-      .catch(() => null);
-    
-    if(r2 && Array.isArray(r2.assets)) {
-      allAssets = r2.assets; 
-      allUnregAssets = Array.isArray(r2.unregAssets) ? r2.unregAssets : [];
-      exportHeaders = Array.isArray(r2.headers) ? r2.headers : [];
-      scanDurationByAsset = r2.scanDurationByAsset || {};
-      unregAddedDurationByAsset = r2.unregAddedDurationByAsset || {};
-      scanDurationTotalMs = Object.values(scanDurationByAsset).reduce((sum, item) => sum + Number((item && item.durationMs) || 0), 0);
-      document.getElementById("dash-pillar-unreg").textContent = allUnregAssets.length.toLocaleString();
-      document.getElementById("dash-total-duration").textContent = formatDurationHms(scanDurationTotalMs);
-      document.getElementById("dash-unreg-duration").textContent = formatDurationHms(r2.unregAddedDurationTotalMs || 0);
-      const lastSyncText = document.getElementById("last-sync-text");
-      if (lastSyncText) {
-        lastSyncText.textContent = "Synced " + new Date().toLocaleTimeString("th-TH", { hour: "2-digit", minute: "2-digit" });
-      }
-      renderOverview();
-      syncDashboardView();
-      updateFilterTabCounts();
-      filterTable();
-    } else {
-      throw new Error("ไม่สามารถอ่านข้อมูลจาก Server ได้");
+    const r2 = await fetchJsonWithTimeout(apiUrl({ action: "export", ...commonParams, _: Date.now() + 1 }), {}, 60000, "Dashboard table");
+    if (!r2 || !Array.isArray(r2.assets)) {
+      throw new Error(r2 && r2.message ? r2.message : "Cannot read dashboard table data from server.");
     }
-  } catch(e) { console.error(e); showToast("❌ " + (e.message || "ไม่สามารถเชื่อมต่อ Server หรือหมดเวลา"), "error"); }
-  finally { refreshBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Auto refresh 2 นาที`; refreshBtn.disabled = false; }
+
+    applyDashboardData(r1, r2);
+    saveLastGoodDashboard(r1, r2);
+  } catch (e) {
+    console.error(e);
+    const message = e && e.name === "AbortError" ? "Dashboard request timed out. Please try again." : (e.message || "Cannot connect to server.");
+    if (!restoreLastGoodDashboard()) setDashboardLoadError(message);
+    showToast("Error: " + message, "error");
+  } finally {
+    refreshBtn.innerHTML = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px;"><polyline points="23 4 23 10 17 10"></polyline><polyline points="1 20 1 14 7 14"></polyline><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path></svg> Auto refresh 2 min`;
+    refreshBtn.disabled = false;
+    dashboardLoadInFlight = false;
+  }
+}
+
+async function startNewCountRound() {
+  if (!requireApproveLogin()) return;
+  const btn = document.querySelector(".count-round-btn");
+  if (!confirm("เริ่มรอบนับใหม่ของเดือนปัจจุบัน? ระบบจะสร้างคอลัมน์ Count 1/2 ใหม่ถ้ายังไม่มี และจะไม่แก้ข้อมูลเดือนเก่า")) return;
+  const originalHtml = btn ? btn.innerHTML : "";
+  if (btn) {
+    btn.disabled = true;
+    btn.innerHTML = `<span class="spinner-sm" style="margin-right:4px;"></span> Creating...`;
+  }
+  try {
+    const res = await fetchJsonWithTimeout(apiUrl({ action: "startNewCountRound", fresh: "1", _: Date.now() }), {}, 30000, "Start count round");
+    if (!res || res.status !== "success") {
+      throw new Error(res && res.message ? res.message : "Cannot start new count round.");
+    }
+    countMeta = res.countMeta || countMeta || {};
+    countPeriods = Array.isArray(res.countPeriods) ? res.countPeriods : countPeriods;
+    currentCountPeriod = "";
+    try { localStorage.removeItem(DASHBOARD_LAST_GOOD_KEY); } catch (e) {}
+    if (typeof updateCountPeriodSelect === "function") updateCountPeriodSelect();
+    showToast(res.message || "New count round is ready.", "success");
+    await loadDashboard();
+  } catch (e) {
+    const message = e && e.name === "AbortError" ? "Start count round timed out." : (e.message || "Cannot start new count round.");
+    showToast("Error: " + message, "error");
+  } finally {
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = originalHtml;
+    }
+  }
 }
