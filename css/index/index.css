@@ -397,8 +397,9 @@ body {
 
 #reader {
   width: 100%;
-  aspect-ratio: 1;
-  max-height: 45vh;
+  aspect-ratio: 16 / 10;
+  min-height: 340px;
+  max-height: 64dvh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -884,7 +885,11 @@ input[type="file"] { display: none; }
   .btn-group { gap: 8px; }
   .form-row, .modal-grid { grid-template-columns: 1fr; }
   .form-field input, .form-field select { min-height: 44px; font-size: 16px; }
-  #reader { max-height: 42dvh; }
+  #reader {
+    aspect-ratio: 4 / 3;
+    min-height: 360px;
+    max-height: 62dvh;
+  }
   .modal-overlay {
     align-items: flex-end;
     padding: 8px;
@@ -928,6 +933,10 @@ input[type="file"] { display: none; }
   .table-row > .cell { flex-direction: column; align-items: stretch; text-align: left; }
   .table-row > .cell::before { flex: none; margin-right: 0; }
   .cell-name, .cell-sub { text-align: left; }
+  #reader {
+    min-height: 330px;
+    max-height: 60dvh;
+  }
 }
 
 @media (max-height: 560px) and (orientation: landscape) {

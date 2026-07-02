@@ -232,22 +232,12 @@ async function applyCameraFocus() {
     advanced.push({ zoom: zoomValue });
   }
 
-  // Force add torch constraint to try enabling the flash
-  const advancedWithTorch = [...advanced, { torch: true }];
+  if (!advanced.length) return;
 
   try {
-    // Try with torch first
-    await track.applyConstraints({ advanced: advancedWithTorch });
-  } catch (torchErr) {
-    console.warn("Failed to apply constraints with torch, trying without torch...", torchErr);
-    // Fallback to applying constraints without torch
-    if (advanced.length) {
-      try {
-        await track.applyConstraints({ advanced });
-      } catch (err) {
-        console.warn("Camera focus constraints not applied", err);
-      }
-    }
+    await track.applyConstraints({ advanced });
+  } catch (err) {
+    console.warn("Camera focus constraints not applied", err);
   }
 }
 
@@ -830,10 +820,21 @@ function getPreferredBackCamera(cameras) {
   return cameras[cameras.length - 1];
 }
 
+function getScannerQrbox(viewfinderWidth, viewfinderHeight) {
+  const maxWidth = Math.max(180, viewfinderWidth - 24);
+  const maxHeight = Math.max(140, viewfinderHeight - 24);
+  const width = Math.floor(Math.min(viewfinderWidth * 0.92, 560, maxWidth));
+  const height = Math.floor(Math.min(viewfinderHeight * 0.62, 340, maxHeight));
+  return {
+    width: Math.min(maxWidth, Math.max(280, width)),
+    height: Math.min(maxHeight, Math.max(180, height))
+  };
+}
+
 function getScannerConfig(withAspectRatio) {
   const config = {
-    fps: 10,
-    qrbox: { width: 250, height: 250 },
+    fps: 15,
+    qrbox: getScannerQrbox,
     // ใช้ native BarcodeDetector ของเบราว์เซอร์แทน decoder JS ล้วนถ้ารองรับ (แม่นยำ/เร็วกว่ามาก
     // โดยเฉพาะมุมเอียง/แสงไม่ดี) เบราว์เซอร์รุ่นเก่าที่ไม่รองรับจะ fallback กลับไปใช้ตัวเดิมอัตโนมัติ
     experimentalFeatures: { useBarCodeDetectorIfSupported: true }
@@ -890,8 +891,9 @@ async function startScanner() {
     // ไล่ลองจาก config ที่ดีที่สุดไปจนถึงแบบหลวมที่สุด เพราะกล้อง/เบราว์เซอร์บางรุ่น (โดยเฉพาะรุ่นเก่า)
     // ปฏิเสธ constraint บางตัว เช่น aspectRatio แบบ hard-fail แม้ permission จะอนุญาตแล้วก็ตาม
     const attempts = [
-      { label: "environment + aspectRatio", target: { facingMode: { ideal: "environment" } }, config: getScannerConfig(true) },
-      { label: "environment (no aspectRatio)", target: { facingMode: { ideal: "environment" } }, config: getScannerConfig(false) }
+      { label: "environment + aspectRatio", target: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, config: getScannerConfig(true) },
+      { label: "environment (no aspectRatio)", target: { facingMode: { ideal: "environment" }, width: { ideal: 1920 }, height: { ideal: 1080 } }, config: getScannerConfig(false) },
+      { label: "environment (basic)", target: { facingMode: { ideal: "environment" } }, config: getScannerConfig(false) }
     ];
 
     let lastErr = null;
@@ -954,9 +956,9 @@ async function startScanner() {
 let isRefocusing = false;
 let autoFocusTimer = null;
 let autoFocusAttempts = 0;
-const AUTO_FOCUS_MAX_ATTEMPTS = 4;
-const AUTO_FOCUS_INTERVAL_MS = 2200;
-const AUTO_FOCUS_WARMUP_MS = 900;
+const AUTO_FOCUS_MAX_ATTEMPTS = 8;
+const AUTO_FOCUS_INTERVAL_MS = 1400;
+const AUTO_FOCUS_WARMUP_MS = 550;
 
 function clearAutoFocus() {
   if (autoFocusTimer) {
@@ -985,12 +987,18 @@ async function runAutoFocusCycle() {
   if (autoFocusAttempts >= AUTO_FOCUS_MAX_ATTEMPTS) return; // ครบโควตาแล้ว เหลือให้แตะโฟกัสเองต่อ ไม่รบกวนจอถี่เกินไป
 
   autoFocusAttempts++;
-  await refocusCamera(null, true);
+  try { await applyCameraFocus(); } catch (e) {}
+  // สลับ soft focus กับ hard refocus: ได้ autofocus บ่อยขึ้น แต่ไม่ restart video ทุก 1.4 วินาทีจนภาพสะดุด
+  if (autoFocusAttempts % 2 === 0) {
+    await refocusCamera(null, true);
+  } else {
+    showFocusRing(null, true);
+  }
   autoFocusTimer = setTimeout(runAutoFocusCycle, AUTO_FOCUS_INTERVAL_MS);
 }
 
 async function refocusCamera(event, isAuto) {
-  if (!isScanning || !html5QrCode || isRefocusing) return;
+  if (!isScanning || !html5QrCode || isProcessing || isRefocusing) return;
   isRefocusing = true;
   if (!isAuto) autoFocusAttempts = 0; // แตะเองถือว่าให้โควตารอบอัตโนมัติใหม่
   showFocusRing(event, isAuto);
@@ -999,6 +1007,7 @@ async function refocusCamera(event, isAuto) {
     const onDecoded = decodedText => onScanSuccess(decodedText);
     const onScanError = () => {};
     await html5QrCode.stop();
+    if (!isScanning || !html5QrCode || isProcessing) return;
     await html5QrCode.start(target, getScannerConfig(false), onDecoded, onScanError);
     try { await applyCameraFocus(); } catch (e) {}
   } catch (err) {
